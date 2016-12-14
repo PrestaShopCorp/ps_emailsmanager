@@ -325,7 +325,7 @@ class Ps_EmailsManager extends Module
 
     private function saveTemplateImgs()
     {
-        $tplName = Tools::getValue('select_template');
+        $tplName = basename(Tools::getValue('select_template'));
         if (!$tplName) {
             return false;
         }
@@ -388,7 +388,7 @@ class Ps_EmailsManager extends Module
             $this->restoreClassicTemplate();
         } elseif (Tools::getValue('select_template')) {
             // If the user wants to configure a template (except the classic)
-            $form = $this->displayForm(Tools::getValue('select_template'));
+            $form = $this->displayForm(basename(Tools::getValue('select_template')));
             if ($form) {
                 return $form;
             }
@@ -636,7 +636,7 @@ class Ps_EmailsManager extends Module
                 }
             }
         }
-        $fieldsValue['select_template'] = Tools::getValue('select_template');
+        $fieldsValue['select_template'] = basename(Tools::getValue('select_template'));
 
         return $fieldsValue;
     }
