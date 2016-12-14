@@ -17,9 +17,6 @@
 class AdminEmailsManagerController extends ModuleAdminController
 {
     protected $content_only = true;
-
-    protected $module_name = 'ps_emailsmanager';
-
     protected $lite_display = true;
     protected $display_header = false;
     protected $display_footer = false;
@@ -32,10 +29,9 @@ class AdminEmailsManagerController extends ModuleAdminController
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminModules'));
         }
 
-        $module = Module::getInstanceByName($this->module_name);
-        if ($module instanceof Module) {
+        if ($this->module instanceof Module) {
             if ($template == 'classic') {
-                $link = _PS_MODULE_DIR_.$this->module_name.DIRECTORY_SEPARATOR.'imports'.DIRECTORY_SEPARATOR;
+                $link = _PS_MODULE_DIR_.$this->module->name.DIRECTORY_SEPARATOR.'imports'.DIRECTORY_SEPARATOR;
                 $link .= 'classic'.DIRECTORY_SEPARATOR.'en'.DIRECTORY_SEPARATOR.'account.html';
                 $templateContent = Tools::file_get_contents($link);
                 if (!$templateContent) {
@@ -43,7 +39,7 @@ class AdminEmailsManagerController extends ModuleAdminController
                 }
             } else {
                 // Get template's settings from it's json file
-                $settings = $module->getTemplateSettings($template);
+                $settings = $this->module->getTemplateSettings($template);
                 if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
                     die(Tools::displayError('Invalid template'));
                 }
@@ -65,11 +61,11 @@ class AdminEmailsManagerController extends ModuleAdminController
                 $this->context->smarty->left_delimiter = '{{';
                 $this->context->smarty->right_delimiter = '}}';
 
-                $translations = $module->getEmailsTranslations(Context::getContext()->language->iso_code);
-                $file = _PS_MODULE_DIR_.$this->module_name.DIRECTORY_SEPARATOR;
+                $translations = $this->module->getEmailsTranslations(Context::getContext()->language->iso_code);
+                $file = _PS_MODULE_DIR_.$this->module->name.DIRECTORY_SEPARATOR;
                 $file .= 'imports'.DIRECTORY_SEPARATOR.$template.DIRECTORY_SEPARATOR.'account.tpl';
                 $templateContent = $this->context->smarty->fetch($file);
-                $templateContent = $module->translateTemplate($templateContent, $translations);
+                $templateContent = $this->module->translateTemplate($templateContent, $translations);
 
                 // Restore default smarty delimiters
                 $this->context->smarty->left_delimiter = '{';
