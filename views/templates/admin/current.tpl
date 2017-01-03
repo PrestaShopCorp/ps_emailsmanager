@@ -27,7 +27,7 @@
 	<h3>{l s='Current template' mod='ps_emailsmanager'}</h3>
 	<div class="row">
 		<div class="col-md-6">
-		  <img src="{$module_dir|escape:'quotes':'UTF-8'}imports/{$currentTemplate.name|escape:'quotes':'UTF-8'}/preview.jpg" style="width:200px;" class='center-block'>
+			<img src="{$module_dir|escape:'quotes':'UTF-8'}imports/{$currentTemplate.name|escape:'quotes':'UTF-8'}/preview.jpg" style="width:200px;" class='center-block'>
 		</div>
 		<div class="col-md-6 col-centered">
 			<h2>{$currentTemplate.name|escape:'htmlall':'UTF-8'} <small>{l s='version' mod='ps_emailsmanager'} {if isset($currentTemplate.version)}{$currentTemplate.version|escape:'htmlall':'UTF-8'}{/if}</small></h2>
@@ -35,9 +35,11 @@
 		</div>
 	</div>
 	<div class="panel-footer">
-		<a href="{$moduleLink|escape:'quotes':'UTF-8'}&amp;select_template={$currentTemplate.name|escape:'htmlall':'UTF-8'}" class="btn btn-default pull-right">
-			<i class="process-icon-configure"></i> {l s='Settings' mod='ps_emailsmanager'}
-		</a>
+		{if $currentTemplate.name != 'classic'}
+			<a href="{$moduleLink|escape:'quotes':'UTF-8'}&amp;select_template={$currentTemplate.name|escape:'htmlall':'UTF-8'}" class="btn btn-default pull-right">
+				<i class="process-icon-configure"></i> {l s='Settings' mod='ps_emailsmanager'}
+			</a>
+		{/if}
 		<a href="{$previewLink|escape:'quotes':'UTF-8'}{$currentTemplate.name|escape:'htmlall':'UTF-8'}" class="btn btn-default pull-right" target="_blank">
 			<i class="process-icon-preview"></i> {l s='Preview' mod='ps_emailsmanager'}
 		</a>
