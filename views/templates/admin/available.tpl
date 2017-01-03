@@ -50,7 +50,7 @@
 										</li>
 										{if $template.name != 'classic'}
 											<li>
-												<a href="{$moduleLink|escape:'quotes':'UTF-8'}&amp;delete_template=" title="{l s='Delete this template' mod='ps_emailsmanager'}" class="delete" onclick="return confirm('{l s='This action will delete the template from your server. Are you sure?' mod='ps_emailsmanager' js=1}')">
+												<a href="{$moduleLink|escape:'quotes':'UTF-8'}&amp;delete_template={$template.name|escape:'htmlall':'UTF-8'}" title="{l s='Delete this template' mod='ps_emailsmanager'}" class="delete" onclick="return confirm('{l s='This action will delete the template from your server. Are you sure?' mod='ps_emailsmanager' js=1}')">
 													<i class="icon-trash"></i> {l s='Delete this template' mod='ps_emailsmanager'}
 												</a>
 											</li>
