@@ -129,6 +129,9 @@ class Ps_EmailsManager extends Module
                 }
             }
 
+            $defaultPreviewImg = dirname(__FILE__).DIRECTORY_SEPARATOR.'views/img/preview.jpg';
+            copy($defaultPreviewImg, $backupPath.DIRECTORY_SEPARATOR.'preview.jpg');
+
             return $this->recursiveCopy($themeMailsPath, $backupPath);
         } catch (Exception $e) {
             $this->_errors[] = $e->getMessage();
