@@ -40,13 +40,17 @@ class AdminEmailsManagerController extends ModuleAdminController
             } else {
                 // Get template's settings from it's json file
                 $settings = $this->module->getTemplateSettings($template);
+                $current = json_decode(Configuration::get('MAILMANAGER_CURRENT_CONF'), true);
+
                 if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
                     die(Tools::displayError('Invalid template'));
                 }
 
                 foreach ($settings['inputs'] as $input) {
                     $value = Tools::getValue($input['name']);
-                    if ($value) {
+                    if ($current['name'] == $template && isset($current['inputs'][$input['name']])) {
+                        $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']]);
+                    } elseif ($value) {
                         $this->context->smarty->assign($input['name'], $value);
                     } else {
                         $this->context->smarty->assign($input['name'], $input['default']);
