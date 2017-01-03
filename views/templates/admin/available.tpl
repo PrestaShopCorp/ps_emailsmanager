@@ -37,7 +37,7 @@
 							<div class="action-buttons">
 								<div class="btn-group">
 									<a href="{$moduleLink|escape:'quotes':'UTF-8'}&amp;select_template={$template.folder|escape:'htmlall':'UTF-8'}" class="btn btn-default">
-										<i class="icon-check"></i> {l s='Use this templates' mod='ps_emailsmanager'}
+										<i class="icon-check"></i> {l s='Use this template' mod='ps_emailsmanager'}
 									</a>
 									<button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 										<i class="icon-caret-down"></i>&nbsp;
