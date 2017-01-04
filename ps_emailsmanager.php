@@ -599,6 +599,14 @@ class Ps_EmailsManager extends Module
 
         $fieldsForm[0]['form']['input'] = $inputs;
 
+        $fieldsForm[0]['form']['buttons'] = array(
+            array(
+                'href' => $this->context->link->getAdminLink('AdminModules').'&configure='.$this->name,
+                'title' => $this->l('Cancel'),
+                'icon' => 'process-icon-cancel'
+            ),
+        );
+
         $helper = new HelperForm();
         $helper->module = $this;
         $helper->name_controller = $this->name;
@@ -609,7 +617,7 @@ class Ps_EmailsManager extends Module
 
         // Title and toolbar
         $helper->title = $this->displayName;
-        $helper->show_cancel_button = true;
+        //$helper->show_cancel_button = true;
         $helper->show_toolbar = true;
         $helper->toolbar_scroll = true;
         $helper->submit_action = 'submitconf_'.$this->name;
