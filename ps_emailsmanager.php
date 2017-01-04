@@ -570,12 +570,17 @@ class Ps_EmailsManager extends Module
                 'class' => 'btn btn-default pull-right',
             ),
             'buttons' => array(
-                'save' => array(
+                'preview' => array(
                     'title' => $this->l('Preview'),
                     'icon' => 'process-icon-preview',
                     'class' => 'pull-right',
                     'id' => 'preview-template',
                     'href' => $this->context->link->getAdminLink('AdminEmailsManager').'&template='.$settings['name']
+                ),
+                'cancel' => array(
+                    'href' => $this->context->link->getAdminLink('AdminModules').'&configure='.$this->name,
+                    'title' => $this->l('Cancel'),
+                    'icon' => 'process-icon-cancel'
                 )
             )
         );
@@ -617,7 +622,6 @@ class Ps_EmailsManager extends Module
 
         // Title and toolbar
         $helper->title = $this->displayName;
-        //$helper->show_cancel_button = true;
         $helper->show_toolbar = true;
         $helper->toolbar_scroll = true;
         $helper->submit_action = 'submitconf_'.$this->name;
