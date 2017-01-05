@@ -16,7 +16,7 @@
 
 class EmailTemplateFilterIterator extends RecursiveFilterIterator
 {
-    private static $validExtensions = array('tpl', 'html');
+    private static $validExtensions = array('tpl', 'html', 'txt');
 
     public function accept()
     {
