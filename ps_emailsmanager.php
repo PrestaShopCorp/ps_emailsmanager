@@ -779,9 +779,15 @@ class Ps_EmailsManager extends Module
             $zip->close();
             $settingsPath = $destPath.DIRECTORY_SEPARATOR.'settings.json';
             $settings = Tools::file_get_contents($settingsPath);
-            if (!$settings || is_null(Tools::jsonDecode($settings, true))) {
-                $this->_errors[] = $this->l('Invalid template');
+            $settings = Tools::jsonDecode($settings, true);
+            if (!$settings || is_null($settings)) {
+                $this->_errors[] = $this->l('Settings file is missing');
                 Tools::deleteDirectory($destPath);
+            } elseif (!isset($settings['name']) || empty($settings['name'])) {
+                $this->_errors[] = $this->l('Name is missing in settings file');
+                Tools::deleteDirectory($destPath);
+            } else {
+                rename($destPath, $this->importsPath.$settings['name']);
             }
             unlink($zipPath);
         }
