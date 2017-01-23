@@ -303,6 +303,19 @@ class Ps_EmailsManager extends Module
                     continue;
                 }
             }
+
+            $i = new DirectoryIterator($tplPath.'/tpl/');
+            foreach ($i as $f) {
+                if ($f->isFile() && $f->getExtension() === 'tpl') {
+                    $dest = $compilePath.$f->getFilename();
+
+                    if (copy($f->getRealPath(), $dest) === false) {
+                        $this->_errors[] = $this->l('Can\'t write file:').' '.$dest;
+                    }
+                } else {
+                    continue;
+                }
+            }
         }
 
         // Copy compiled files into mails' dir if every
