@@ -46,7 +46,15 @@ class Ps_EmailsManager extends Module
      */
     public function install()
     {
-        return $this->backupDefaultPack() && $this->installTab() && parent::install();
+        $success = $this->backupDefaultPack()
+                && $this->installTab()
+                && parent::install();
+
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            return $success && $this->registerHook('actionGetExtraMailTemplateVars');
+        } else {
+            return $success;
+        }
     }
 
     public function installTab()
@@ -76,6 +84,11 @@ class Ps_EmailsManager extends Module
         } else {
             return (true);
         }
+    }
+
+    public function hookActionGetExtraMailTemplateVars($params)
+    {
+        $params['extra_template_vars']['{passwd}'] = '*********';
     }
 
     /**
