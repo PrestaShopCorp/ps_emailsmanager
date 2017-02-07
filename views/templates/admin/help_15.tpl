@@ -29,7 +29,7 @@
 		<img src="../modules/ps_emailsmanager/logo.png" />
 		<p>{l s='This module allows you to easily add new email templates, modify them and save your configurations.' mod='ps_emailsmanager'}</p>
 		<ul>
-			<li>{l s='Start by importing a pack of template that you can buy on ' mod='ps_emailsmanager'} <a href="http://addons.prestashop.com" target="_blank">addons.prestashop.com</a></li>
+			<li>{l s='Start by importing a pack of template that you can buy on ' mod='ps_emailsmanager'} <a href="https://addons.prestashop.com/en/625-prestashop-email-templates" target="_blank">addons.prestashop.com</a></li>
 			<li>{l s='In "Current template", you can preview your current template and modify it by clicking on Settings (not available for "classic").' mod='ps_emailsmanager'}</li>
 			<li>{l s='In the last block, you can see all your available templates and choose one according to your needs !.' mod='ps_emailsmanager'}</li>
 		</ul>
