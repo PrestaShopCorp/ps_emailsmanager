@@ -40,7 +40,7 @@ class AdminEmailsManagerController extends ModuleAdminController
             } else {
                 // Get template's settings from it's json file
                 $settings = $this->module->getTemplateSettings($template);
-                $current = json_decode(Configuration::get('MAILMANAGER_CURRENT_CONF'), true);
+                $current = json_decode(Configuration::get('MAILMANAGER_CURRENT_CONF_'.$this->module->getCurrentThemeId()), true);
 
                 if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
                     die(Tools::displayError('Invalid template'));

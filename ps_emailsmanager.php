@@ -100,23 +100,8 @@ class Ps_EmailsManager extends Module
         /** /var/www/prestashop/mails **/
         $coreMailsPath  = _PS_ROOT_DIR_.DIRECTORY_SEPARATOR.'mails';
 
-        /** /var/www/prestashop/themes/mytheme/mails **/
-        $themeMailsPath = _PS_THEME_DIR_.'mails';
-
-        /** /var/www/prestashop/modules/emailsmanager/imports/classic **/
-        $backupPath  = $this->importsPath.self::DEFAULT_THEME_NAME;
-
-        // Creates the "classic" template directory if not exists
-        if (!file_exists($backupPath) && !mkdir($backupPath)) {
-            $this->_errors[] = $this->l('Can\'t create folder: ').$backupPath;
-            return false;
-        }
-
-        // Creates a "mails" directory inside the current theme if not exists
-        if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
-            $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath;
-            return false;
-        }
+        // Get all installed themes
+        $themes = $this->getAllThemes();
 
         // Checks that every core templates are overriden in the current theme.
         // If not, copy the missing ones inside it.
@@ -129,29 +114,50 @@ class Ps_EmailsManager extends Module
                 $toCheck = str_replace($coreMailsPath, '', $file->getPathname());
                 $isoCode = $this->getIsoCodeFromTplPath($file->getPathname());
 
-                if (!file_exists($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode) &&
-                    !mkdir($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode)) {
-                    $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath.DIRECTORY_SEPARATOR.$isoCode;
-                    return false;
-                }
+                foreach ($themes as $theme) {
 
-                if (!file_exists($themeMailsPath.$toCheck) &&
-                    !copy($file->getPathname(), $themeMailsPath.$toCheck)) {
-                    $this->_errors[] = $this->l('Can\'t copy file: ').$themeMailsPath.$toCheck;
-                    return false;
+                    /** /var/www/prestashop/themes/theme_name/mails **/
+                    $themeMailsPath = _PS_ALL_THEMES_DIR_.$theme->directory.DIRECTORY_SEPARATOR.'mails';
+
+                    // Create "mails" directory inside the theme if it doesn't exist
+                    if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
+                        $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath;
+                        return false;
+                    }
+
+                    // Create iso folder if it doesn't exist
+                    if (!file_exists($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode) &&
+                        !mkdir($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode)) {
+                        $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath.DIRECTORY_SEPARATOR.$isoCode;
+                        return false;
+                    }
+
+                    // Copy email if it doesn't exist
+                    if (!file_exists($themeMailsPath.$toCheck) &&
+                        !copy($file->getPathname(), $themeMailsPath.$toCheck)) {
+                        $this->_errors[] = $this->l('Can\'t copy file: ').$themeMailsPath.$toCheck;
+                        return false;
+                    }
                 }
             }
-
-            $defaultPreviewImg = dirname(__FILE__).DIRECTORY_SEPARATOR.'views/img/preview.jpg';
-            copy($defaultPreviewImg, $backupPath.DIRECTORY_SEPARATOR.'preview.jpg');
-
-            return $this->recursiveCopy($themeMailsPath, $backupPath);
         } catch (Exception $e) {
             $this->_errors[] = $e->getMessage();
             return false;
         }
 
-        return true;
+        /** /var/www/prestashop/modules/emailsmanager/imports/classic **/
+        $backupPath  = $this->importsPath.self::DEFAULT_THEME_NAME;
+
+        // Creates the "classic" template directory if not exists
+        if (!file_exists($backupPath) && !mkdir($backupPath)) {
+            $this->_errors[] = $this->l('Can\'t create folder: ').$backupPath;
+            return false;
+        }
+
+        $defaultPreviewImg = dirname(__FILE__).DIRECTORY_SEPARATOR.'views/img/preview.jpg';
+        copy($defaultPreviewImg, $backupPath.DIRECTORY_SEPARATOR.'preview.jpg');
+
+        return $this->recursiveCopy($themeMailsPath, $backupPath);
     }
 
     // Takes a email template path and returns its lang's iso code
@@ -199,7 +205,7 @@ class Ps_EmailsManager extends Module
      */
     public function uninstall()
     {
-        if ($this->restoreClassicTemplate()) {
+        if ($this->restoreClassicTemplate(true)) {
             return parent::uninstall();
         }
         return false;
@@ -263,7 +269,7 @@ class Ps_EmailsManager extends Module
         ));
 
         // ... and add a record in the database
-        Configuration::updateValue('MAILMANAGER_CURRENT_CONF', Tools::jsonEncode($userSettings));
+        Configuration::updateGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId(), Tools::jsonEncode($userSettings));
 
         // Change smarty delimiters to ease the parsing process
         $this->context->smarty->left_delimiter = '{{';
@@ -336,7 +342,8 @@ class Ps_EmailsManager extends Module
             $compilePath = dirname(__FILE__).DIRECTORY_SEPARATOR.'compile'.DIRECTORY_SEPARATOR.$tplName;
             $compilePath .= DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
 
-            $themeMailsPath = _PS_THEME_DIR_.'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
+            $themeMailsPath = _PS_ALL_THEMES_DIR_.$this->getCurrentThemeDirectory().DIRECTORY_SEPARATOR;
+            $themeMailsPath .= 'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
             if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
                 $this->_errors[] = $this->l('Can\'t create directory:').' '.$themeMailsPath;
                 return false;
@@ -383,6 +390,44 @@ class Ps_EmailsManager extends Module
         }
 
         return true;
+    }
+
+    public function getAllThemes()
+    {
+        if (version_compare(_PS_VERSION_, '1.7', '<')) {
+            return Theme::getThemes();
+        } else {
+            $list = (new PrestaShop\PrestaShop\Core\Addon\Theme\ThemeManagerBuilder($this->context, Db::getInstance()))
+                            ->buildRepository()
+                            ->getList();
+            $themes = array();
+            foreach ($list as $theme) {
+                $stdTheme = new stdClass();
+                $stdTheme->directory = $theme->getName();
+                // In 1.7+, we use the name as an ID
+                $stdTheme->id = Tools::strtoupper($theme->getName());
+                $themes[] = $stdTheme;
+            }
+            return $themes;
+        }
+    }
+
+    public function getCurrentThemeId()
+    {
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            return Tools::strtoupper(Context::getContext()->shop->theme->getName());
+        } else {
+            return $this->context->shop->id_theme;
+        }
+    }
+
+    public function getCurrentThemeDirectory()
+    {
+        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
+            return Context::getContext()->shop->theme->getName();
+        } else {
+            return $this->context->shop->theme_directory;
+        }
     }
 
     /**
@@ -518,34 +563,52 @@ class Ps_EmailsManager extends Module
         }
     }
 
-    public function restoreClassicTemplate()
+    public function restoreClassicTemplate($all = false)
     {
         $classicTplPath  = $this->importsPath.self::DEFAULT_THEME_NAME;
-        $mailsFolder     = _PS_THEME_DIR_.'mails';
-        $backupFolder    = _PS_THEME_DIR_.'mails_backup';
 
-        if (file_exists($backupFolder)) {
-            Tools::deleteDirectory($backupFolder, true);
+        if ($all) {
+            $themes = $this->getAllThemes();
+        } else {
+            if (version_compare(_PS_VERSION_, '1.7', '<')) {
+                $theme = new Theme($this->context->shop->id_theme);
+                $themes = array($theme);
+            } else {
+                $stdTheme = new stdClass();
+                $stdTheme->directory = $this->context->shop->theme->getName();
+                // In 1.7+, we use the name as an ID
+                $stdTheme->id = Tools::strtoupper($this->context->shop->theme->getName());
+                $themes = array($stdTheme);
+            }
         }
 
-        if (!mkdir($backupFolder, 0777)) {
-            $this->_errors[] = $this->l('Cannot create backup\'s folder. Please check permissions.');
-            return false;
+        foreach ($themes as $theme) {
+            $mailsFolder     = _PS_ALL_THEMES_DIR_.$theme->directory.DIRECTORY_SEPARATOR.'mails';
+            $backupFolder    = _PS_ALL_THEMES_DIR_.$theme->directory.DIRECTORY_SEPARATOR.'mails_backup';
+
+            if (file_exists($backupFolder)) {
+                Tools::deleteDirectory($backupFolder, true);
+            }
+
+            if (!mkdir($backupFolder, 0777)) {
+                $this->_errors[] = $this->l('Cannot create backup\'s folder. Please check permissions.');
+                return false;
+            }
+
+            self::recurseCopy($mailsFolder, $backupFolder);
+
+            // Remove the current template config
+            Configuration::deleteByName('MAILMANAGER_CURRENT_CONF_'.$theme->id);
+
+            self::recurseCopy($classicTplPath, $mailsFolder);
         }
-
-        self::recurseCopy($mailsFolder, $backupFolder);
-
-        // Remove the current template config
-        Configuration::deleteByName('MAILMANAGER_CURRENT_CONF');
-
-        self::recurseCopy($classicTplPath, $mailsFolder);
 
         return true;
     }
 
     public function getCurrentTemplate()
     {
-        $currentTpl = Configuration::get('MAILMANAGER_CURRENT_CONF');
+        $currentTpl = Configuration::getGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId());
         if ($currentTpl) {
             $currentTpl = Tools::jsonDecode($currentTpl, true);
             $path = $this->importsPath.$currentTpl['name'];
@@ -659,7 +722,7 @@ class Ps_EmailsManager extends Module
     public function getFieldsValue(array $settings)
     {
         $fieldsValue  = array();
-        $userSettings = Tools::jsonDecode(Configuration::get('MAILMANAGER_CURRENT_CONF'), true);
+        $userSettings = Tools::jsonDecode(Configuration::getGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId()), true);
 
         // If the template currently installed is not the same that the one that
         // is being configured, load the default values
