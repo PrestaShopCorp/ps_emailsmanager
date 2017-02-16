@@ -480,6 +480,12 @@ class Ps_EmailsManager extends Module
             }
         }
 
+        $addons_products = $this->getAddonsProducts();
+        if ($addons_products) {
+            shuffle($addons_products);
+            $addons_products = array_slice($addons_products, 0, 8);
+        }
+
         $this->context->smarty->assign(array(
             'module_dir'         => $this->_path,
             'link'               => $this->context->link,
@@ -487,7 +493,9 @@ class Ps_EmailsManager extends Module
             'availableTemplates' => $this->getAvailableTemplates(),
             'currentTemplate'    => $this->getCurrentTemplate(),
             'moduleLink'         => $this->context->link->getAdminLink('AdminModules').'&configure='.$this->name,
-            'previewLink'        => $this->context->link->getAdminLink('AdminEmailsManager').'&template='
+            'previewLink'        => $this->context->link->getAdminLink('AdminEmailsManager').'&template=',
+            'addons_products'    => $addons_products,
+            'ps_version'         => (float)_PS_VERSION_ * 10
         ));
 
         // Display errors
@@ -516,8 +524,13 @@ class Ps_EmailsManager extends Module
             $html .= $this->context->smarty->fetch($tplPath.'current'.$tplSuffix.'.tpl');
         }
 
-        // Available template
+        // Available templates
         $html .= $this->context->smarty->fetch($tplPath.'available'.$tplSuffix.'.tpl');
+
+        // Templates from PS Addons
+        if (version_compare(_PS_VERSION_, '1.6', '>=') && $addons_products) {
+            $html .= $this->context->smarty->fetch($tplPath.'addons.tpl');
+        }
 
         return $html;
     }
@@ -915,5 +928,28 @@ class Ps_EmailsManager extends Module
                 $this->_errors[] = sprintf($this->l('Internal error #%s'), $_FILES['newfile']['error']);
                 break;
         }
+    }
+
+    private function getAddonsProducts()
+    {
+        $post_query_data = array(
+            'method' => 'search',
+            'version' => _PS_VERSION_,
+            'iso_lang' => Context::getContext()->language->iso_code,
+            'iso_code' => Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT')),
+            'search_type' => 'full',
+            'product_type' => 'module',
+            'id_category' => 625
+        );
+
+        $url = 'https://api.addons.prestashop.com/?';
+        $content = Tools::file_get_contents($url.http_build_query($post_query_data));
+        if ($content) {
+            $content = json_decode($content, true);
+            if (isset($content) && !empty($content['results'])) {
+                return $content['results'];
+            }
+        }
+        return false;
     }
 }
