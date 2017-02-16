@@ -25,7 +25,7 @@ class Ps_EmailsManager extends Module
     public function __construct()
     {
         $this->name      = 'ps_emailsmanager';
-        $this->version   = '1.0.4';
+        $this->version   = '1.0.5';
         $this->tab       = 'emailing';
         $this->author    = 'PrestaShop';
         $this->bootstrap = true;
