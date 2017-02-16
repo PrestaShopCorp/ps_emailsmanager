@@ -23,7 +23,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{if !empty($availableTemplates)}
+{if !empty($availableTemplates) && count($availableTemplates) > 1}
 	<div class="panel">
 		<h3>{l s='Available templates' mod='ps_emailsmanager'}</h3>
 	  <div class="row">
