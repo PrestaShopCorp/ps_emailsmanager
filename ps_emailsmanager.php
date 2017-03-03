@@ -776,7 +776,13 @@ class Ps_EmailsManager extends Module
         // is being configured, load the default values
         if (is_null($userSettings) || $userSettings['name'] !== $settings['name']) {
             foreach ($settings['inputs'] as $param) {
-                $fieldsValue[$param['name']] = $param['default'];
+                 if (isset($param['lang']) && $param['lang'] == true) {
+                    foreach (Language::getLanguages(true) as $lang) {
+                        $fieldsValue[$param['name']][$lang['id_lang']] = isset($param['default'][$lang['iso_code']]) ? $param['default'][$lang['iso_code']] : '';
+                    }
+                } else {
+                    $fieldsValue[$param['name']] = $param['default'];
+                }
             }
         } else {
             // The merchant wants to edit the currently installed template so we load his settings
