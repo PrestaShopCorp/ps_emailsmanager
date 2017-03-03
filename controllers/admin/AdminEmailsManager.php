@@ -45,12 +45,15 @@ class AdminEmailsManagerController extends ModuleAdminController
                 if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
                     die(Tools::displayError('Invalid template'));
                 }
-
+                
+                $id_lang = Context::getContext()->language->id;
+                $iso_lang = Context::getContext()->language->iso_code;
+                
                 foreach ($settings['inputs'] as $input) {
                     $value = Tools::getValue($input['name']);
                     if ($current['name'] == $template && isset($current['inputs'][$input['name']])) {
                         if (isset($input['lang']) && $input['lang'] == true) {
-                                $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']][Context::getContext()->language->id]);
+                            $this->context->smarty->assign($input['name'], isset($current['inputs'][$input['name']][$id_lang]) ? $current['inputs'][$input['name']][$id_lang] : '');
                         } else {
                             $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']]);
                         }
@@ -58,7 +61,7 @@ class AdminEmailsManagerController extends ModuleAdminController
                         $this->context->smarty->assign($input['name'], $value);
                     } else {
                         if (isset($input['lang']) && $input['lang'] == true) {
-                            $this->context->smarty->assign($input['name'], isset($input['default'][Context::getContext()->language->iso_code]) ? $input['default'][Context::getContext()->language->iso_code] : '');
+                            $this->context->smarty->assign($input['name'], isset($input['default'][$iso_lang]) ? $input['default'][$iso_lang] : '');
                         } else {
                             $this->context->smarty->assign($input['name'], $input['default']);
                         }
