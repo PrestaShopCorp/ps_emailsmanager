@@ -224,15 +224,6 @@ class Ps_EmailsManager extends Module
 
         return $translations;
     }
-    
-    public function getLangFieldsTranslations($lang_fields, $id_lang)
-    {
-        $lang_fields_value = array();
-        foreach ($lang_fields as $field => $values) {
-            $lang_fields_value[$field] = $values[$id_lang];
-        }
-        return $lang_fields_value;
-    }
 
     public function translateTemplate($tpl, $translations)
     {
@@ -307,9 +298,8 @@ class Ps_EmailsManager extends Module
             //Fetch translations from addons api
             $translations = $this->getEmailsTranslations($language['iso_code']);
 
-            $lang_fields_value = $this->getLangFieldsTranslations($lang_fields, $language['id_lang']);
-            foreach ($lang_fields_value as $k => $v) {
-                $this->context->smarty->assign(array($k => $v));
+            foreach ($lang_fields as $field => $values) {
+                $this->context->smarty->assign(array($field => $values[$language['id_lang']]));
             }
 
             if (!$translations) {
