@@ -49,7 +49,11 @@ class AdminEmailsManagerController extends ModuleAdminController
                 foreach ($settings['inputs'] as $input) {
                     $value = Tools::getValue($input['name']);
                     if ($current['name'] == $template && isset($current['inputs'][$input['name']])) {
-                        $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']]);
+                        if (isset($input['lang']) && $input['lang'] == true) {
+                                $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']][Context::getContext()->language->id]);
+                        } else {
+                            $this->context->smarty->assign($input['name'], $current['inputs'][$input['name']]);
+                        }
                     } elseif ($value) {
                         $this->context->smarty->assign($input['name'], $value);
                     } else {
