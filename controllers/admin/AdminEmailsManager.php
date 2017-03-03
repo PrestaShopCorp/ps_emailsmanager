@@ -57,7 +57,11 @@ class AdminEmailsManagerController extends ModuleAdminController
                     } elseif ($value) {
                         $this->context->smarty->assign($input['name'], $value);
                     } else {
-                        $this->context->smarty->assign($input['name'], $input['default']);
+                        if (isset($input['lang']) && $input['lang'] == true) {
+                            $this->context->smarty->assign($input['name'], isset($input['default'][Context::getContext()->language->iso_code]) ? $input['default'][Context::getContext()->language->iso_code] : '');
+                        } else {
+                            $this->context->smarty->assign($input['name'], $input['default']);
+                        }
                     }
                 }
 
