@@ -254,16 +254,31 @@ class Ps_EmailsManager extends Module
             $this->_errors[] = $this->l('Invalid template');
             return false;
         }
-
+        
         foreach ($settings['inputs'] as $input) {
-            $value = Tools::getValue($input['name']);
-            $userSettings['inputs'][$input['name']] = $value;
+            //check lang type field
+            if (isset($input['lang']) && $input['lang'] == true) {
+                foreach (Language::getLanguages() as $lang) {
+                   $value = Tools::getValue($input['name'].'_'.$lang['id_lang']);
+                   $userSettings['inputs'][$input['name']][$lang['id_lang']] = $value;
+                }
+            } else {
+                $value = Tools::getValue($input['name']);
+                $userSettings['inputs'][$input['name']] = $value;
+            }
         }
 
         // ...assign these settings into smarty...
+        $lang_fields = array();
         foreach ($userSettings['inputs'] as $k => $v) {
-            $this->context->smarty->assign(array($k => $v));
+            //!lang fields
+            if (!is_array($v)) {
+                $this->context->smarty->assign(array($k => $v));
+            } else {
+                $lang_fields[$k] = $v;
+            }
         }
+
         $this->context->smarty->assign(array(
             'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
         ));
@@ -282,6 +297,10 @@ class Ps_EmailsManager extends Module
 
             //Fetch translations from addons api
             $translations = $this->getEmailsTranslations($language['iso_code']);
+
+            foreach ($lang_fields as $field => $values) {
+                $this->context->smarty->assign(array($field => $values[$language['id_lang']]));
+            }
 
             if (!$translations) {
                 $this->_errors[] = $this->l('Addons API error');
@@ -696,6 +715,7 @@ class Ps_EmailsManager extends Module
                 'desc'     => isset($input['desc'][$iso]) ? $input['desc'][$iso] : $input['desc']['en'],
                 'type'     => $input['type'],
                 'label'    => isset($input['label'][$iso]) ? $input['label'][$iso] : $input['label']['en'],
+                'lang'     => isset($input['lang']) ? $input['lang'] : '',
             );
         }
         $inputs[] = array(
@@ -728,6 +748,11 @@ class Ps_EmailsManager extends Module
         $helper->toolbar_scroll = true;
         $helper->submit_action = 'submitconf_'.$this->name;
         $helper->fields_value = $this->getFieldsValue($settings);
+        
+        $helper->tpl_vars = array(
+                'languages' => $this->context->controller->getLanguages(),
+                'id_language' => $this->context->language->id,
+            );
 
         return $helper->generateForm($fieldsForm);
     }
@@ -741,7 +766,13 @@ class Ps_EmailsManager extends Module
         // is being configured, load the default values
         if (is_null($userSettings) || $userSettings['name'] !== $settings['name']) {
             foreach ($settings['inputs'] as $param) {
-                $fieldsValue[$param['name']] = $param['default'];
+                 if (isset($param['lang']) && $param['lang'] == true) {
+                    foreach (Language::getLanguages(true) as $lang) {
+                        $fieldsValue[$param['name']][$lang['id_lang']] = isset($param['default'][$lang['iso_code']]) ? $param['default'][$lang['iso_code']] : '';
+                    }
+                } else {
+                    $fieldsValue[$param['name']] = $param['default'];
+                }
             }
         } else {
             // The merchant wants to edit the currently installed template so we load his settings
@@ -749,7 +780,13 @@ class Ps_EmailsManager extends Module
                 if (isset($userSettings['inputs'][$param['name']])) {
                     $fieldsValue[$param['name']] = $userSettings['inputs'][$param['name']];
                 } else {
-                    $fieldsValue[$param['name']] = $param['default'];
+                    if ( isset($param['lang']) && $param['lang'] == true) {
+                        foreach (Language::getLanguages(true) as $lang) {
+                            $fieldsValue[$param['name']][$lang['id_lang']] = $param['default'][$lang['id_lang']];
+                        }
+                    } else {
+                        $fieldsValue[$param['name']] = $param['default'];
+                    }
                 }
             }
         }
