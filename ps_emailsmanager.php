@@ -25,7 +25,7 @@ class Ps_EmailsManager extends Module
     public function __construct()
     {
         $this->name      = 'ps_emailsmanager';
-        $this->version   = '1.0.5';
+        $this->version   = '1.1.0';
         $this->tab       = 'emailing';
         $this->author    = 'PrestaShop';
         $this->bootstrap = true;
@@ -254,13 +254,13 @@ class Ps_EmailsManager extends Module
             $this->_errors[] = $this->l('Invalid template');
             return false;
         }
-        
+
         foreach ($settings['inputs'] as $input) {
             //check lang type field
             if (isset($input['lang']) && $input['lang'] == true) {
                 foreach (Language::getLanguages() as $lang) {
-                   $value = Tools::getValue($input['name'].'_'.$lang['id_lang']);
-                   $userSettings['inputs'][$input['name']][$lang['id_lang']] = $value;
+                    $value = Tools::getValue($input['name'].'_'.$lang['id_lang']);
+                    $userSettings['inputs'][$input['name']][$lang['id_lang']] = $value;
                 }
             } else {
                 $value = Tools::getValue($input['name']);
@@ -748,7 +748,7 @@ class Ps_EmailsManager extends Module
         $helper->toolbar_scroll = true;
         $helper->submit_action = 'submitconf_'.$this->name;
         $helper->fields_value = $this->getFieldsValue($settings);
-        
+
         $helper->tpl_vars = array(
                 'languages' => $this->context->controller->getLanguages(),
                 'id_language' => $this->context->language->id,
@@ -766,7 +766,7 @@ class Ps_EmailsManager extends Module
         // is being configured, load the default values
         if (is_null($userSettings) || $userSettings['name'] !== $settings['name']) {
             foreach ($settings['inputs'] as $param) {
-                 if (isset($param['lang']) && $param['lang'] == true) {
+                if (isset($param['lang']) && $param['lang'] == true) {
                     foreach (Language::getLanguages(true) as $lang) {
                         $fieldsValue[$param['name']][$lang['id_lang']] = isset($param['default'][$lang['iso_code']]) ? $param['default'][$lang['iso_code']] : '';
                     }
@@ -780,7 +780,7 @@ class Ps_EmailsManager extends Module
                 if (isset($userSettings['inputs'][$param['name']])) {
                     $fieldsValue[$param['name']] = $userSettings['inputs'][$param['name']];
                 } else {
-                    if ( isset($param['lang']) && $param['lang'] == true) {
+                    if (isset($param['lang']) && $param['lang'] == true) {
                         foreach (Language::getLanguages(true) as $lang) {
                             $fieldsValue[$param['name']][$lang['id_lang']] = $param['default'][$lang['id_lang']];
                         }
