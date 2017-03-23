@@ -280,7 +280,7 @@ class Ps_EmailsManager extends Module
         }
 
         $this->context->smarty->assign(array(
-            'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
+            'mails_img_url' => $this->context->shop->getBaseURL().'img'.DIRECTORY_SEPARATOR.'emails'.DIRECTORY_SEPARATOR,
         ));
 
         // ... and add a record in the database
@@ -315,9 +315,13 @@ class Ps_EmailsManager extends Module
                 Tools::deleteDirectory($compilePath, true);
             }
 
-            // Create folder for compiled files
+            // Create folders for compiled files
             if (!mkdir($compilePath, 0777, true)) {
                 $this->_errors[] = $this->l('Can\'t create folder: '.$compilePath);
+                return false;
+            }
+            if (!mkdir($compilePath.DIRECTORY_SEPARATOR.'modules', 0777, true)) {
+                $this->_errors[] = $this->l('Can\'t create folder: '.$compilePath.DIRECTORY_SEPARATOR.'modules');
                 return false;
             }
 
@@ -337,12 +341,33 @@ class Ps_EmailsManager extends Module
                     if (file_put_contents($dest, $templateContent) === false) {
                         $this->_errors[] = $this->l('Can\'t write file:').' '.$dest;
                     }
-                } else {
-                    continue;
+                } elseif ($f->isDir() && $f->getFilename() == 'modules') {
+                    $modules = new RecursiveDirectoryIterator($tplPath.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR);
+                    $modules = new RecursiveIteratorIterator($modules);
+                    foreach ($modules as $m) {
+                        if ($m->isFile() && $m->getExtension() === 'tpl') {
+                            $templateContent = $this->context->smarty->fetch($m->getRealPath());
+
+                            $templateContent = $this->translateTemplate($templateContent, $translations);
+
+                            $dest = $compilePath.'modules'.DIRECTORY_SEPARATOR.basename($m->getPath()).DIRECTORY_SEPARATOR;
+
+                            if (!mkdir($dest, 0777, true)) {
+                                $this->_errors[] = $this->l('Can\'t create folder:').''.$dest;
+                                return false;
+                            }
+
+                            if (file_put_contents($dest.$m->getBasename('.tpl').'.html', $templateContent) === false) {
+                                $err = $this->l('Can\'t write file:').' '.$dest.$m->getBasename('.tpl').'.html';
+                                $this->_errors[] = $err;
+                            }
+                        }
+                    }
                 }
             }
 
-            $i = new DirectoryIterator($tplPath.'/tpl/');
+            // Copy native templates files
+            $i = new DirectoryIterator($tplPath.DIRECTORY_SEPARATOR.'tpl'.DIRECTORY_SEPARATOR);
             foreach ($i as $f) {
                 if ($f->isFile() && $f->getExtension() === 'tpl') {
                     $dest = $compilePath.$f->getFilename();
@@ -356,7 +381,7 @@ class Ps_EmailsManager extends Module
             }
         }
 
-        // Copy compiled files into mails' dir if every
+        // Copy compiled files into mails' dir
         foreach (Language::getLanguages() as $language) {
             $compilePath = dirname(__FILE__).DIRECTORY_SEPARATOR.'compile'.DIRECTORY_SEPARATOR.$tplName;
             $compilePath .= DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
