@@ -939,7 +939,7 @@ class Ps_EmailsManager extends Module
         $zip      = new ZipArchive();
         $destPath = $zipPath.Tools::substr($filename, 0, -4);
 
-        $allowedTypes = array('text/html', 'text/plain', 'image/jpeg', 'image/png', 'image/gif');
+        $allowedTypes = array('text/html', 'text/plain', 'image/jpeg', 'image/png', 'image/gif', 'application/json');
 
         if ($zip->open($zipPath.$filename, ZipArchive::CREATE)) {
             $zip->extractTo($destPath);
