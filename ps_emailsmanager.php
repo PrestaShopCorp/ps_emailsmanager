@@ -39,7 +39,7 @@ class Ps_EmailsManager extends Module
         );
 
         $this->importsPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'imports'.DIRECTORY_SEPARATOR;
-        $this->extractPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'extract'.DIRECTORY_SEPARATOR;
+        $this->extractPath = _PS_CACHE_DIR_.'sandbox'.DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -911,21 +911,21 @@ class Ps_EmailsManager extends Module
             || !self::hasValidMimeType($_FILES['uploadedfile']['tmp_name'], 'application/zip')) {
             $this->_errors[] = $this->l('Invalid .zip file');
         } else {
-            $targetPath .= $_FILES['uploadedfile']['name'];
+            $targetPath .= uniqid().DIRECTORY_SEPARATOR;
 
-            if (file_exists($this->extractPath)) {
-                Tools::deleteDirectory($this->extractPath);
+            if (file_exists($targetPath)) {
+                Tools::deleteDirectory($targetPath);
             }
 
-            if (!mkdir($this->extractPath, 0777, true)) {
-                $this->_errors[] = $this->l('Can\'t create folder: '.$this->extractPath);
+            if (!mkdir($targetPath, 0777, true)) {
+                $this->_errors[] = $this->l('Can\'t create folder: '.$targetPath);
                 return false;
             }
 
-            if (!@move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath)) {
-                $this->_errors[] = $this->l('Wrong permissions:').' '.$targetPath;
+            if (!move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath.$_FILES['uploadedfile']['name'])) {
+                $this->_errors[] = $this->l('Can\'t copy file to:').' '.$targetPath;
             } else {
-                return $this->unpackTemplates($targetPath);
+                return $this->unpackTemplates($targetPath, $_FILES['uploadedfile']['name']);
             }
         }
         return false;
@@ -934,14 +934,14 @@ class Ps_EmailsManager extends Module
     /**
      * Takes a templates archive and unzip it
      */
-    public function unpackTemplates($zipPath)
+    public function unpackTemplates($zipPath, $filename)
     {
         $zip      = new ZipArchive();
-        $destPath = Tools::substr($zipPath, 0, -4);
+        $destPath = $zipPath.Tools::substr($filename, 0, -4);
 
         $allowedTypes = array('text/html', 'text/plain', 'image/jpeg', 'image/png', 'image/gif');
 
-        if ($zip->open($zipPath, ZipArchive::CREATE)) {
+        if ($zip->open($zipPath.$filename, ZipArchive::CREATE)) {
             $zip->extractTo($destPath);
             $zip->close();
 
@@ -963,7 +963,6 @@ class Ps_EmailsManager extends Module
             $settings = Tools::jsonDecode($settings, true);
             if (!$settings || is_null($settings)) {
                 $this->_errors[] = $this->l('Settings file is missing');
-                Tools::deleteDirectory($this->extractPath);
             } elseif (!isset($settings['name']) || empty($settings['name'])) {
                 $this->_errors[] = $this->l('Name is missing in settings file');
             } else {
@@ -971,14 +970,14 @@ class Ps_EmailsManager extends Module
                     Tools::deleteDirectory($this->importsPath.$settings['name']);
                 }
                 rename($destPath, $this->importsPath.$settings['name']);
-                Tools::deleteDirectory($this->extractPath);
+                Tools::deleteDirectory($zipPath);
                 return true;
             }
         } else {
             $this->_errors[] = $this->l('Can\'t open:'.$zipPath);
         }
 
-        Tools::deleteDirectory($this->extractPath);
+        Tools::deleteDirectory($zipPath);
         return false;
     }
 
