@@ -45,10 +45,10 @@ class AdminEmailsManagerController extends ModuleAdminController
                 if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
                     die(Tools::displayError('Invalid template'));
                 }
-                
+
                 $id_lang = Context::getContext()->language->id;
                 $iso_lang = Context::getContext()->language->iso_code;
-                
+
                 foreach ($settings['inputs'] as $input) {
                     $value = Tools::getValue($input['name']);
                     if ($current['name'] == $template && isset($current['inputs'][$input['name']])) {
@@ -68,9 +68,7 @@ class AdminEmailsManagerController extends ModuleAdminController
                     }
                 }
 
-                $this->context->smarty->assign(array(
-                    'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
-                ));
+                $this->context->smarty->assign($this->module->getTplVariables());
 
                 // Change smarty delimiters to ease the parsing process
                 $this->context->smarty->left_delimiter = '{{';

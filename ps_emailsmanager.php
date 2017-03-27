@@ -39,6 +39,7 @@ class Ps_EmailsManager extends Module
         );
 
         $this->importsPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'imports'.DIRECTORY_SEPARATOR;
+        $this->extractPath = _PS_CACHE_DIR_.'sandbox'.DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -234,6 +235,32 @@ class Ps_EmailsManager extends Module
         return $tpl;
     }
 
+    public function getTplVariables()
+    {
+        $variables = Configuration::getMultiple(array(
+            'PS_SHOP_ADDR1',
+            'PS_SHOP_ADDR2',
+            'PS_SHOP_CODE',
+            'PS_SHOP_CITY',
+            'PS_SHOP_COUNTRY_ID',
+            'PS_SHOP_PHONE',
+            'PS_SHOP_FAX'
+        ));
+
+        $country = Country::getNameById(Context::getContext()->language->id, $variables['PS_SHOP_COUNTRY_ID']);
+
+        return array(
+            'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
+            'shop_addr1' => $variables['PS_SHOP_ADDR1'],
+            'shop_addr2' => $variables['PS_SHOP_ADDR2'],
+            'shop_zipcode' => $variables['PS_SHOP_CODE'],
+            'shop_city' => $variables['PS_SHOP_CITY'],
+            'shop_country' => $country,
+            'shop_phone' => $variables['PS_SHOP_PHONE'],
+            'shop_fax' => $variables['PS_SHOP_FAX'],
+        );
+    }
+
     // Save the settings of the selected template in ps_configuration
     public function saveTemplateConf()
     {
@@ -279,9 +306,7 @@ class Ps_EmailsManager extends Module
             }
         }
 
-        $this->context->smarty->assign(array(
-            'mails_img_url' => $this->context->shop->getBaseURL().'img'.DIRECTORY_SEPARATOR.'emails'.DIRECTORY_SEPARATOR,
-        ));
+        $this->context->smarty->assign($this->getTplVariables());
 
         // ... and add a record in the database
         Configuration::updateGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId(), Tools::jsonEncode($userSettings));
@@ -491,7 +516,9 @@ class Ps_EmailsManager extends Module
 
         // Process ZIP upload
         if (Tools::isSubmit('submit_'.$this->name)) {
-            $this->postProcess();
+            if ($this->postProcess()) {
+                $html .= $this->displayConfirmation('Added with success');
+            }
         }
 
         // Process template configuration
@@ -891,70 +918,116 @@ class Ps_EmailsManager extends Module
         return $helper->generateForm($fieldsForm);
     }
 
+    private static function hasValidMimeType($filename, $wanted_mime_types)
+    {
+        if (!is_array($wanted_mime_types)) {
+            $wanted_mime_types = array($wanted_mime_types);
+        }
+
+        $mimeType = false;
+
+        if (function_exists('finfo_open')) {
+            $const = defined('FILEINFO_MIME_TYPE') ? FILEINFO_MIME_TYPE : FILEINFO_MIME;
+            $finfo = finfo_open($const);
+            $mimeType = finfo_file($finfo, $filename);
+            finfo_close($finfo);
+        } elseif (function_exists('mime_content_type')) {
+            $mimeType = mime_content_type($filename);
+        } elseif (function_exists('exec')) {
+            $mimeType = trim(exec('file -b --mime-type '.escapeshellarg($filename)));
+            if (!$mimeType) {
+                $mimeType = trim(exec('file --mime '.escapeshellarg($filename)));
+            }
+            if (!$mimeType) {
+                $mimeType = trim(exec('file -bi '.escapeshellarg($filename)));
+            }
+        }
+
+        return in_array($mimeType, $wanted_mime_types);
+    }
+
     /**
      * Performs actions when the user posts something through the configuration
      * forms
      */
     public function postProcess()
     {
-        $targetPath = $this->importsPath;
+        $targetPath = $this->extractPath;
 
         if (isset($_FILES['uploadedfile']['error']) && $_FILES['uploadedfile']['error'] != UPLOAD_ERR_OK) {
             $this->manageUploadError();
         } elseif (!isset($_FILES['uploadedfile'])
-            || mime_content_type($_FILES['uploadedfile']['tmp_name']) != 'application/zip') {
+            || !self::hasValidMimeType($_FILES['uploadedfile']['tmp_name'], 'application/zip')) {
             $this->_errors[] = $this->l('Invalid .zip file');
         } else {
-            $targetPath .= $_FILES['uploadedfile']['name'];
-            if (!@move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath)) {
-                $this->_errors[] = $this->l('Wrong permissions:').' '.$targetPath;
+            $targetPath .= uniqid().DIRECTORY_SEPARATOR;
+
+            if (file_exists($targetPath)) {
+                Tools::deleteDirectory($targetPath);
+            }
+
+            if (!mkdir($targetPath, 0777, true)) {
+                $this->_errors[] = $this->l('Can\'t create folder: '.$targetPath);
+                return false;
+            }
+
+            if (!move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath.$_FILES['uploadedfile']['name'])) {
+                $this->_errors[] = $this->l('Can\'t copy file to:').' '.$targetPath;
             } else {
-                $this->unpackTemplates($targetPath);
+                return $this->unpackTemplates($targetPath, $_FILES['uploadedfile']['name']);
             }
         }
+        return false;
     }
 
     /**
      * Takes a templates archive and unzip it
      */
-    public function unpackTemplates($zipPath)
+    public function unpackTemplates($zipPath, $filename)
     {
         $zip      = new ZipArchive();
-        $destPath = Tools::substr($zipPath, 0, -4);
+        $destPath = $zipPath.Tools::substr($filename, 0, -4);
 
-        $allowedTypes = array('text/html', 'text/plain', 'image/jpeg', 'image/png', 'image/jpeg');
-        $allowedExtenstions = array('tpl', 'jpg', 'json', 'png', 'gif');
+        $allowedTypes = array('text/html', 'text/plain', 'image/jpeg', 'image/png', 'image/gif', 'application/json');
 
-        if ($zip->open($zipPath, ZipArchive::CREATE)) {
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $stat = $zip->statIndex($i);
-                $ext = pathinfo($stat['name']);
-                if (array_key_exists('extension', $ext)) {
-                    $ext = $ext['extension'];
-                    $mime = mime_content_type('zip://'.$zipPath.'#'.$zip->getNameIndex($i));
-                    if (!in_array($ext, $allowedExtenstions) || !in_array($mime, $allowedTypes)) {
+        if ($zip->open($zipPath.$filename, ZipArchive::CREATE)) {
+            $zip->extractTo($destPath);
+            $zip->close();
+
+            // Check if files are valid in uploaded zip
+            $files = Tools::scandir($destPath, false, '', true);
+            foreach ($files as $file) {
+                $fullPath = $destPath.DIRECTORY_SEPARATOR.$file;
+                if (!is_dir($fullPath)) {
+                    if (!self::hasValidMimeType($fullPath, $allowedTypes)) {
                         $this->_errors[] = $this->l('Invalid file(s) in your zip');
-                        unlink($zipPath);
-                        return;
+                        Tools::deleteDirectory($destPath);
+                        return false;
                     }
                 }
             }
-            $zip->extractTo($destPath);
-            $zip->close();
+
             $settingsPath = $destPath.DIRECTORY_SEPARATOR.'settings.json';
             $settings = Tools::file_get_contents($settingsPath);
             $settings = Tools::jsonDecode($settings, true);
             if (!$settings || is_null($settings)) {
                 $this->_errors[] = $this->l('Settings file is missing');
-                Tools::deleteDirectory($destPath);
             } elseif (!isset($settings['name']) || empty($settings['name'])) {
                 $this->_errors[] = $this->l('Name is missing in settings file');
-                Tools::deleteDirectory($destPath);
             } else {
+                if (file_exists($this->importsPath.$settings['name'])) {
+                    Tools::deleteDirectory($this->importsPath.$settings['name']);
+                }
                 rename($destPath, $this->importsPath.$settings['name']);
+                Tools::deleteDirectory($zipPath);
+                return true;
             }
-            unlink($zipPath);
+        } else {
+            $this->_errors[] = $this->l('Can\'t open:'.$zipPath);
         }
+
+        Tools::deleteDirectory($zipPath);
+        return false;
     }
 
     /**
