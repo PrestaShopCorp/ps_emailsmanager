@@ -235,6 +235,32 @@ class Ps_EmailsManager extends Module
         return $tpl;
     }
 
+    public function getTplVariables()
+    {
+        $variables = Configuration::getMultiple(array(
+            'PS_SHOP_ADDR1',
+            'PS_SHOP_ADDR2',
+            'PS_SHOP_CODE',
+            'PS_SHOP_CITY',
+            'PS_SHOP_COUNTRY_ID',
+            'PS_SHOP_PHONE',
+            'PS_SHOP_FAX'
+        ));
+
+        $country = Country::getNameById(Context::getContext()->language->id, $variables['PS_SHOP_COUNTRY_ID']);
+
+        return array(
+            'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
+            'shop_addr1' => $variables['PS_SHOP_ADDR1'],
+            'shop_addr2' => $variables['PS_SHOP_ADDR2'],
+            'shop_zipcode' => $variables['PS_SHOP_CODE'],
+            'shop_city' => $variables['PS_SHOP_CITY'],
+            'shop_country' => $country,
+            'shop_phone' => $variables['PS_SHOP_PHONE'],
+            'shop_fax' => $variables['PS_SHOP_FAX'],
+        );
+    }
+
     // Save the settings of the selected template in ps_configuration
     public function saveTemplateConf()
     {
@@ -280,9 +306,8 @@ class Ps_EmailsManager extends Module
             }
         }
 
-        $this->context->smarty->assign(array(
-            'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
-        ));
+
+        $this->context->smarty->assign($this->getTplVariables());
 
         // ... and add a record in the database
         Configuration::updateGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId(), Tools::jsonEncode($userSettings));
