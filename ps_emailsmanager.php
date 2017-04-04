@@ -968,7 +968,6 @@ class Ps_EmailsManager extends Module
 
         if ($zip->open($zipPath.$filename, ZipArchive::CREATE)) {
             $zip->extractTo($destPath);
-            $zip->close();
 
             // Check if files are valid in uploaded zip
             $files = Tools::scandir($destPath, false, '', true);
@@ -978,6 +977,7 @@ class Ps_EmailsManager extends Module
                     if (!self::hasValidMimeType($fullPath, $allowedTypes)) {
                         $this->_errors[] = $this->l('Invalid file(s) in your zip');
                         Tools::deleteDirectory($destPath);
+                        $zip->close();
                         return false;
                     }
                 }
@@ -994,10 +994,12 @@ class Ps_EmailsManager extends Module
                 if (file_exists($this->importsPath.$settings['name'])) {
                     Tools::deleteDirectory($this->importsPath.$settings['name']);
                 }
-                rename($destPath, $this->importsPath.$settings['name']);
+                $zip->extractTo($this->importsPath.$settings['name']);
+                $zip->close();
                 Tools::deleteDirectory($zipPath);
                 return true;
             }
+            $zip->close();
         } else {
             $this->_errors[] = $this->l('Can\'t open:'.$zipPath);
         }
