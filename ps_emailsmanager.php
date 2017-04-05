@@ -243,11 +243,14 @@ class Ps_EmailsManager extends Module
             'PS_SHOP_CODE',
             'PS_SHOP_CITY',
             'PS_SHOP_COUNTRY_ID',
+            'PS_SHOP_STATE_ID',
             'PS_SHOP_PHONE',
-            'PS_SHOP_FAX'
+            'PS_SHOP_FAX',
+            'PS_SHOP_DETAILS'
         ));
 
         $country = Country::getNameById(Context::getContext()->language->id, $variables['PS_SHOP_COUNTRY_ID']);
+        $state = State::getNameById($variables['PS_SHOP_STATE_ID']);
 
         return array(
             'mails_img_url' => $this->context->shop->getBaseURL().'img/emails/',
@@ -256,8 +259,10 @@ class Ps_EmailsManager extends Module
             'shop_zipcode' => $variables['PS_SHOP_CODE'],
             'shop_city' => $variables['PS_SHOP_CITY'],
             'shop_country' => $country,
+            'shop_state' => $state,
             'shop_phone' => $variables['PS_SHOP_PHONE'],
             'shop_fax' => $variables['PS_SHOP_FAX'],
+            'shop_details' => $variables['PS_SHOP_DETAILS'],
         );
     }
 
