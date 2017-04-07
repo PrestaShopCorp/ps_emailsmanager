@@ -742,6 +742,17 @@ class Ps_EmailsManager extends Module
         $iso = Context::getContext()->language->iso_code;
         $inputs = array();
         foreach ($settings['inputs'] as $input) {
+			
+			if (isset($input['values'])) {
+				foreach ($input['values'] as &$value) {
+					if (isset($value['label'][$iso])) {
+						$value['label'] = $value['label'][$iso];
+					} else {
+						$value['label'] = $value['label']['en'];
+					}
+				}
+			}
+			
             $inputs[] = array(
                 'required' => isset($input['required']) ? $input['required'] : false,
                 'name'     => $input['name'],
@@ -749,6 +760,8 @@ class Ps_EmailsManager extends Module
                 'type'     => $input['type'],
                 'label'    => isset($input['label'][$iso]) ? $input['label'][$iso] : $input['label']['en'],
                 'lang'     => isset($input['lang']) ? $input['lang'] : '',
+				'values'     => isset($input['values']) ? $input['values'] : '',
+				'is_bool'     => isset($input['is_bool']) ? $input['is_bool'] : ''
             );
         }
         $inputs[] = array(
