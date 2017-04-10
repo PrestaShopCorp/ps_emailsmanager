@@ -504,9 +504,11 @@ class Ps_EmailsManager extends Module
 
         // Process template configuration
         if (Tools::isSubmit('submitconf_'.$this->name)) {
-            if ($this->saveTemplateImgs()) {
-                if ($this->saveTemplateConf()) {
-                    $this->_confirmations[] = $this->l('Template changed with success!');
+            if ($this->uploadFiles()) {
+                if ($this->saveTemplateImgs()) {
+                    if ($this->saveTemplateConf()) {
+                        $this->_confirmations[] = $this->l('Template changed with success!');
+                    }
                 }
             }
         } elseif (Tools::getValue('select_template') === self::DEFAULT_THEME_NAME) {
@@ -1083,4 +1085,41 @@ class Ps_EmailsManager extends Module
         }
         return false;
     }
+    
+    function uploadFiles()
+    {
+
+        $tplName = basename(Tools::getValue('select_template'));
+        if (!$tplName || $tplName == '') {
+            $this->_errors[] = $this->l('Invalid template\'s name');
+            return false;
+        }
+
+        $tplPath = $this->importsPath . $tplName;
+
+        $settings = $this->getTemplateSettings($tplName);
+
+        foreach ($_FILES as $input_name => $file) {
+            $filename = $file['name'];
+            foreach ($settings['inputs'] as $input) {
+                if ($input['name'] == $input_name) {
+                    
+                    if (isset($file) && isset($file['tmp_name']) && !empty($file['tmp_name'])) {
+                        if ($error = ImageManager::validateUpload($file)) {
+                            $this->_errors[] = $error;
+                            return false;
+                        } else {
+                            if (!move_uploaded_file($file['tmp_name'], $tplPath . "/img/" . $filename)) {
+                                $this->_errors[] = $this->l('An error occurred while attempting to upload the file.');
+                                return false;
+                            }
+                            $_POST[$input['name']] = $filename;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
 }
