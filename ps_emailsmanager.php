@@ -754,6 +754,16 @@ class Ps_EmailsManager extends Module
                 }
             }
             
+            // PS15 switch type not supported, use radio box instead
+            if (version_compare(_PS_VERSION_, '1.6', '<') && $input['type'] == 'switch') {
+                $input['type'] = 'radio';
+                $input['is_bool'] = true;
+                $input['class'] = 't';
+            }
+            if (version_compare(_PS_VERSION_, '1.6', '<') && $input['type'] == 'radio') {
+                $input['class'] = 't';
+            }
+            
             $inputs[] = array(
                 'required' => isset($input['required']) ? $input['required'] : false,
                 'name'     => $input['name'],
@@ -761,8 +771,9 @@ class Ps_EmailsManager extends Module
                 'type'     => $input['type'],
                 'label'    => isset($input['label'][$iso]) ? $input['label'][$iso] : $input['label']['en'],
                 'lang'     => isset($input['lang']) ? $input['lang'] : '',
-                'values'     => isset($input['values']) ? $input['values'] : '',
-                'is_bool'     => isset($input['is_bool']) ? $input['is_bool'] : ''
+                'values'     => isset($input['values']) ? $input['values'] : array(),
+                'is_bool'     => isset($input['is_bool']) ? $input['is_bool'] : false,
+                'class'     => isset($input['class']) ? $input['class'] : ''
             );
         }
         $inputs[] = array(
