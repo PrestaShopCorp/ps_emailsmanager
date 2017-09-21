@@ -763,6 +763,12 @@ class Ps_EmailsManager extends Module
             if (version_compare(_PS_VERSION_, '1.6', '<') && $input['type'] == 'radio') {
                 $input['class'] = 't';
             }
+            if ($input['type'] == 'select') {
+                if (isset($input['values'])) {
+                    $input['options'] = array('query' => $input['values'], 'id' => 'id', 'name' => 'label');
+                    $input['values'] = array();
+                }
+            }
             
             $inputs[] = array(
                 'required' => isset($input['required']) ? $input['required'] : false,
@@ -772,6 +778,8 @@ class Ps_EmailsManager extends Module
                 'label'    => isset($input['label'][$iso]) ? $input['label'][$iso] : $input['label']['en'],
                 'lang'     => isset($input['lang']) ? $input['lang'] : '',
                 'values'     => isset($input['values']) ? $input['values'] : array(),
+                'options'     => isset($input['options']) ? $input['options'] : array(),
+                'multiple'     => isset($input['multiple']) ? $input['multiple'] : false,
                 'is_bool'     => isset($input['is_bool']) ? $input['is_bool'] : false,
                 'class'     => isset($input['class']) ? $input['class'] : ''
             );
