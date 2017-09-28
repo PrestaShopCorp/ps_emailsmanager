@@ -295,7 +295,14 @@ class Ps_EmailsManager extends Module
                     $userSettings['inputs'][$input['name']][$lang['id_lang']] = $value;
                 }
             } else {
-                $value = Tools::getValue($input['name']);
+                //check if no file selected
+                if ($input['type'] == 'file' && !Tools::getValue($input['name'])) {
+                    //get saved value instead of empty value
+                    $currentFieldsValue = $this->getFieldsValue($settings);
+                    $value = $currentFieldsValue[$input['name']];
+                } else {
+                    $value = Tools::getValue($input['name']);
+                }
                 $userSettings['inputs'][$input['name']] = $value;
             }
         }
