@@ -295,7 +295,14 @@ class Ps_EmailsManager extends Module
                     $userSettings['inputs'][$input['name']][$lang['id_lang']] = $value;
                 }
             } else {
-                $value = Tools::getValue($input['name']);
+                //check if no file selected
+                if ($input['type'] == 'file' && !Tools::getValue($input['name'])) {
+                    //get saved value instead of empty value
+                    $currentFieldsValue = $this->getFieldsValue($settings);
+                    $value = $currentFieldsValue[$input['name']];
+                } else {
+                    $value = Tools::getValue($input['name']);
+                }
                 $userSettings['inputs'][$input['name']] = $value;
             }
         }
@@ -504,9 +511,11 @@ class Ps_EmailsManager extends Module
 
         // Process template configuration
         if (Tools::isSubmit('submitconf_'.$this->name)) {
-            if ($this->saveTemplateImgs()) {
-                if ($this->saveTemplateConf()) {
-                    $this->_confirmations[] = $this->l('Template changed with success!');
+            if ($this->uploadFiles()) {
+                if ($this->saveTemplateImgs()) {
+                    if ($this->saveTemplateConf()) {
+                        $this->_confirmations[] = $this->l('Template changed with success!');
+                    }
                 }
             }
         } elseif (Tools::getValue('select_template') === self::DEFAULT_THEME_NAME) {
@@ -742,6 +751,32 @@ class Ps_EmailsManager extends Module
         $iso = Context::getContext()->language->iso_code;
         $inputs = array();
         foreach ($settings['inputs'] as $input) {
+            if (isset($input['values'])) {
+                foreach ($input['values'] as &$value) {
+                    if (isset($value['label'][$iso])) {
+                        $value['label'] = $value['label'][$iso];
+                    } else {
+                        $value['label'] = $value['label']['en'];
+                    }
+                }
+            }
+            
+            // PS15 switch type not supported, use radio box instead
+            if (version_compare(_PS_VERSION_, '1.6', '<') && $input['type'] == 'switch') {
+                $input['type'] = 'radio';
+                $input['is_bool'] = true;
+                $input['class'] = 't';
+            }
+            if (version_compare(_PS_VERSION_, '1.6', '<') && $input['type'] == 'radio') {
+                $input['class'] = 't';
+            }
+            if ($input['type'] == 'select') {
+                if (isset($input['values'])) {
+                    $input['options'] = array('query' => $input['values'], 'id' => 'id', 'name' => 'label');
+                    $input['values'] = array();
+                }
+            }
+            
             $inputs[] = array(
                 'required' => isset($input['required']) ? $input['required'] : false,
                 'name'     => $input['name'],
@@ -749,6 +784,11 @@ class Ps_EmailsManager extends Module
                 'type'     => $input['type'],
                 'label'    => isset($input['label'][$iso]) ? $input['label'][$iso] : $input['label']['en'],
                 'lang'     => isset($input['lang']) ? $input['lang'] : '',
+                'values'     => isset($input['values']) ? $input['values'] : array(),
+                'options'     => isset($input['options']) ? $input['options'] : array(),
+                'multiple'     => isset($input['multiple']) ? $input['multiple'] : false,
+                'is_bool'     => isset($input['is_bool']) ? $input['is_bool'] : false,
+                'class'     => isset($input['class']) ? $input['class'] : ''
             );
         }
         $inputs[] = array(
@@ -1069,5 +1109,39 @@ class Ps_EmailsManager extends Module
             }
         }
         return false;
+    }
+    
+    public function uploadFiles()
+    {
+        $tplName = basename(Tools::getValue('select_template'));
+        if (!$tplName || $tplName == '') {
+            $this->_errors[] = $this->l('Invalid template\'s name');
+            return false;
+        }
+
+        $tplPath = $this->importsPath . $tplName;
+
+        $settings = $this->getTemplateSettings($tplName);
+
+        foreach ($_FILES as $input_name => $file) {
+            $filename = $file['name'];
+            foreach ($settings['inputs'] as $input) {
+                if ($input['name'] == $input_name) {
+                    if (isset($file) && isset($file['tmp_name']) && !empty($file['tmp_name'])) {
+                        if ($error = ImageManager::validateUpload($file)) {
+                            $this->_errors[] = $error;
+                            return false;
+                        } else {
+                            if (!move_uploaded_file($file['tmp_name'], $tplPath . "/img/" . $filename)) {
+                                $this->_errors[] = $this->l('An error occurred while attempting to upload the file.');
+                                return false;
+                            }
+                            $_POST[$input['name']] = $filename;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
