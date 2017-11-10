@@ -25,7 +25,7 @@ class Ps_EmailsManager extends Module
     public function __construct()
     {
         $this->name      = 'ps_emailsmanager';
-        $this->version   = '1.1.0';
+        $this->version   = '1.2.2';
         $this->tab       = 'emailing';
         $this->author    = 'PrestaShop';
         $this->bootstrap = true;
@@ -377,7 +377,7 @@ class Ps_EmailsManager extends Module
 
                             $dest = $compilePath.'modules'.DIRECTORY_SEPARATOR.basename($m->getPath()).DIRECTORY_SEPARATOR;
 
-                            if (!mkdir($dest, 0777, true)) {
+                            if (!is_dir($dest) && !mkdir($dest, 0777, true)) {
                                 $this->_errors[] = $this->l('Can\'t create folder:').''.$dest;
                                 return false;
                             }
@@ -412,13 +412,42 @@ class Ps_EmailsManager extends Module
             $compilePath .= DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
 
             $themeMailsPath = _PS_ALL_THEMES_DIR_.$this->getCurrentThemeDirectory().DIRECTORY_SEPARATOR;
+            $themeModulesMailsPath = $themeMailsPath.'modules'.DIRECTORY_SEPARATOR;
             $themeMailsPath .= 'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
+
             if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
                 $this->_errors[] = $this->l('Can\'t create directory:').' '.$themeMailsPath;
                 return false;
             }
 
             self::recurseCopy($compilePath, $themeMailsPath);
+
+            $i = new DirectoryIterator($compilePath);
+            foreach ($i as $f) {
+                if ($f->isDir() && $f->getFilename() == 'modules') {
+                    $modules = new RecursiveDirectoryIterator($tplPath.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR);
+                    $modules = new RecursiveIteratorIterator($modules);
+                    foreach ($modules as $m) {
+                        if ($m->isFile() && $m->getExtension() === 'tpl') {
+                            $source = $compilePath.'modules'.DIRECTORY_SEPARATOR.basename($m->getPath()).DIRECTORY_SEPARATOR;
+                            $dest = $themeModulesMailsPath.basename($m->getPath()).DIRECTORY_SEPARATOR.'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
+
+                            if (!is_dir($dest) && !mkdir($dest, 0777, true)) {
+                                $this->_errors[] = $this->l('Can\'t create directory:').' '.$dest;
+                                return false;
+                            }
+
+                            $source = $source.$m->getBasename('.tpl').'.html';
+                            $dest = $dest.$m->getBasename('.tpl').'.html';
+
+                            if (copy($source, $dest) === false) {
+                                $this->_errors[] = $this->l('Can\'t write file:').' '.$dest;
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Restore default smarty delimiters
@@ -630,7 +659,7 @@ class Ps_EmailsManager extends Module
             mkdir($dst);
         }
         while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
+            if (($file != '.') && ($file != '..') && ($file != 'modules')) {
                 if (is_dir($src.DIRECTORY_SEPARATOR.$file)) {
                     self::recurseCopy($src.DIRECTORY_SEPARATOR.$file, $dst.DIRECTORY_SEPARATOR.$file, $del);
                 } else {
