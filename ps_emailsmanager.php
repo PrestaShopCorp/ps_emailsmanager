@@ -89,6 +89,10 @@ class Ps_EmailsManager extends Module
 
     public function hookActionGetExtraMailTemplateVars($params)
     {
+        if (version_compare(_PS_VERSION_, '1.7', '>=') && $params['template'] == 'cheque') {
+            $params['extra_template_vars']['{cheque_name}'] = $params['template_vars']['{check_name}'];
+            $params['extra_template_vars']['{cheque_address_html}'] = $params['template_vars']['{check_address_html}'];
+        }
         $params['extra_template_vars']['{passwd}'] = '*********';
     }
 
