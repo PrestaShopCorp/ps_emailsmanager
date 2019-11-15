@@ -379,7 +379,7 @@ class Ps_EmailsManager extends Module
                     $dest = $compilePath.$f->getFilename();
 
                     if (copy($f->getRealPath(), $dest) === false) {
-                        $this->_errors[] = $this->trans('Cannot write file:', array(), 'Modules.Emailsmanager.Admin').' '.$dest;
+                        $this->_errors[] = $this->trans('Cannot write file: %s', array($dest), 'Modules.Emailsmanager.Admin');
                     }
                 } else {
                     continue;
