@@ -953,7 +953,7 @@ class Ps_EmailsManager extends Module
             }
 
             if (!move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath.$_FILES['uploadedfile']['name'])) {
-                $this->_errors[] = $this->trans('Cannot copy file to:', array(), 'Admin.Emailsmanager.Admin').' '.$targetPath;
+                $this->_errors[] = $this->trans('Cannot copy file to: %s', array($targetPath), 'Admin.Emailsmanager.Admin');
             } else {
                 return $this->unpackTemplates($targetPath, $_FILES['uploadedfile']['name']);
             }
