@@ -194,7 +194,7 @@ class Ps_EmailsManager extends Module
             }
 
             if (!copy($copySrc, $copyDest)) {
-                $this->_errors[] = $this->trans('Cannot copy file:', array(), 'Modules.Emailsmanager.Admin').$copyDest;
+                $this->_errors[] = $this->trans('Cannot copy file: %s', array($copyDest), 'Modules.Emailsmanager.Admin');
                 return false;
             }
         }
