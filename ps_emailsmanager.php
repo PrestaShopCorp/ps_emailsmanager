@@ -348,7 +348,7 @@ class Ps_EmailsManager extends Module
 
             // Create folder for compiled files
             if (!mkdir($compilePath, 0777, true)) {
-                $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin'.$compilePath);
+                $this->_errors[] = $this->trans('Cannot create folder: %s', array($compilePath), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
