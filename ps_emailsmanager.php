@@ -151,7 +151,7 @@ class Ps_EmailsManager extends Module
 
         // Creates the "classic" template directory if not exists
         if (!file_exists($backupPath) && !mkdir($backupPath)) {
-            $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin').$backupPath;
+            $this->_errors[] = $this->trans('Cannot create folder: %s', array($backupPath), 'Modules.Emailsmanager.Admin');
             return false;
         }
 
