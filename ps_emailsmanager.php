@@ -948,7 +948,7 @@ class Ps_EmailsManager extends Module
             }
 
             if (!mkdir($targetPath, 0777, true)) {
-                $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin'.$targetPath);
+                $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin') . ' ' . $targetPath;
                 return false;
             }
 
