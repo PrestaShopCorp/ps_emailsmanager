@@ -366,7 +366,7 @@ class Ps_EmailsManager extends Module
                     $dest = $compilePath.$f->getBasename('.tpl').'.html';
 
                     if (file_put_contents($dest, $templateContent) === false) {
-                        $this->_errors[] = $this->trans('Cannot write file:', array(), 'Admin.Notifications.Error').' '.$dest;
+                        $this->_errors[] = $this->trans('Cannot write file:', array(), 'Modules.Emailsmanager.Admin').' '.$dest;
                     }
                 } else {
                     continue;
