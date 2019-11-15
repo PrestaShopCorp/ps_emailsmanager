@@ -189,7 +189,7 @@ class Ps_EmailsManager extends Module
 
             if (!file_exists($dest.DIRECTORY_SEPARATOR.$isoCode) &&
                 !mkdir($dest.DIRECTORY_SEPARATOR.$isoCode)) {
-                $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin').$dest.DIRECTORY_SEPARATOR.$isoCode;
+                $this->_errors[] = $this->trans('Cannot create folder: %s', array($dest . DIRECTORY_SEPARATOR . $isoCode), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
