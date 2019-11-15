@@ -136,7 +136,7 @@ class Ps_EmailsManager extends Module
                     // Copy email if it doesn't exist
                     if (!file_exists($themeMailsPath.$toCheck) &&
                         !copy($file->getPathname(), $themeMailsPath.$toCheck)) {
-                        $this->_errors[] = $this->trans('Cannot copy file:', array(), 'Modules.Emailsmanager.Admin').$themeMailsPath.$toCheck;
+                        $this->_errors[] = $this->trans('Cannot copy file: %s', array($themeMailsPath . $toCheck), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
                 }
