@@ -122,7 +122,7 @@ class Ps_EmailsManager extends Module
 
                     // Create "mails" directory inside the theme if it doesn't exist
                     if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
-                        $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin').$themeMailsPath;
+                        $this->_errors[] = $this->trans('Cannot create folder: %s', array($themeMailsPath), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
 
