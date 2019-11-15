@@ -395,7 +395,7 @@ class Ps_EmailsManager extends Module
             $themeMailsPath = _PS_ALL_THEMES_DIR_.$this->getCurrentThemeDirectory().DIRECTORY_SEPARATOR;
             $themeMailsPath .= 'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
             if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
-                $this->_errors[] = $this->trans('Cannot create directory:', array(), 'Modules.Emailsmanager.Admin').' '.$themeMailsPath;
+                $this->_errors[] = $this->trans('Cannot create directory: %s', array($themeMailsPath), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
