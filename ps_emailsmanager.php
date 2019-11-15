@@ -1006,7 +1006,7 @@ class Ps_EmailsManager extends Module
             }
             $zip->close();
         } else {
-            $this->_errors[] = $this->trans('Cannot open:', array(), 'Modules.Emailsmanager.Admin'.$zipPath);
+            $this->_errors[] = $this->trans('Cannot open:', array(), 'Modules.Emailsmanager.Admin') . ' ' . $zipPath;
         }
 
         Tools::deleteDirectory($zipPath);
