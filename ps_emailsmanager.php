@@ -420,7 +420,7 @@ class Ps_EmailsManager extends Module
         $dest         = _PS_IMG_DIR_.'emails';
 
         if (!file_exists($dest) && !mkdir($dest)) {
-            $this->_errors[] = $this->trans('Cannot create directory:', array(), 'Admin.Emailsmanager.Admin').' '._PS_IMG_DIR_.'emails';
+            $this->_errors[] = $this->trans('Cannot create directory: %s', array(_PS_IMG_DIR_ . 'emails'), 'Admin.Emailsmanager.Admin');
             return false;
         }
 
