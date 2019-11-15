@@ -129,7 +129,7 @@ class Ps_EmailsManager extends Module
                     // Create iso folder if it doesn't exist
                     if (!file_exists($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode) &&
                         !mkdir($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode)) {
-                        $this->_errors[] = $this->trans('Cannot create folder:', array(), 'Modules.Emailsmanager.Admin').$themeMailsPath.DIRECTORY_SEPARATOR.$isoCode;
+                        $this->_errors[] = $this->trans('Cannot create folder: %s', array($themeMailsPath . DIRECTORY_SEPARATOR . $isoCode), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
 
