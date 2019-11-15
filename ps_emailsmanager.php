@@ -1043,7 +1043,7 @@ class Ps_EmailsManager extends Module
                 $this->_errors[] = $this->trans('A PHP extension stopped the file upload.', array(), 'Admin.Notifications.Error');
                 break;
             default:
-                $this->_errors[] = sprintf($this->trans('Internal error #%s', array(), 'Admin.Notifications.Error'), $_FILES['newfile']['error']);
+                $this->_errors[] = $this->trans('Internal error #%s', array($_FILES['newfile']['error']), 'Admin.Notifications.Error');
                 break;
         }
     }
