@@ -32,10 +32,10 @@ class Ps_EmailsManager extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Email Templates Manager');
-        $this->description = $this->l('This module allows you to manage your email templates');
-        $this->confirmUninstall = $this->l(
-            'Are you sure you want to uninstall this module? It will restore default email templates'
+        $this->displayName = $this->trans('Email Templates Manager', array(), 'Modules.Emailsmanager.Admin');
+        $this->description = $this->trans('Adapt your emails’ design to your site’s visual identity, to your business, or to the time of the year!', array(), 'Modules.Emailsmanager.Admin');
+        $this->confirmUninstall = $this->trans(
+            'Are you sure you want to uninstall this module? It will restore default email templates', array(), 'Modules.Emailsmanager.Admin'
         );
 
         $this->importsPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'imports'.DIRECTORY_SEPARATOR;
@@ -122,21 +122,21 @@ class Ps_EmailsManager extends Module
 
                     // Create "mails" directory inside the theme if it doesn't exist
                     if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
-                        $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath;
+                        $this->_errors[] = $this->trans('Cannot create folder: %s', array($themeMailsPath), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
 
                     // Create iso folder if it doesn't exist
                     if (!file_exists($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode) &&
                         !mkdir($themeMailsPath.DIRECTORY_SEPARATOR.$isoCode)) {
-                        $this->_errors[] = $this->l('Can\'t create folder: ').$themeMailsPath.DIRECTORY_SEPARATOR.$isoCode;
+                        $this->_errors[] = $this->trans('Cannot create folder: %s', array($themeMailsPath . DIRECTORY_SEPARATOR . $isoCode), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
 
                     // Copy email if it doesn't exist
                     if (!file_exists($themeMailsPath.$toCheck) &&
                         !copy($file->getPathname(), $themeMailsPath.$toCheck)) {
-                        $this->_errors[] = $this->l('Can\'t copy file: ').$themeMailsPath.$toCheck;
+                        $this->_errors[] = $this->trans('Cannot copy file: %s', array($themeMailsPath . $toCheck), 'Modules.Emailsmanager.Admin');
                         return false;
                     }
                 }
@@ -151,7 +151,7 @@ class Ps_EmailsManager extends Module
 
         // Creates the "classic" template directory if not exists
         if (!file_exists($backupPath) && !mkdir($backupPath)) {
-            $this->_errors[] = $this->l('Can\'t create folder: ').$backupPath;
+            $this->_errors[] = $this->trans('Cannot create folder: %s', array($backupPath), 'Modules.Emailsmanager.Admin');
             return false;
         }
 
@@ -189,12 +189,12 @@ class Ps_EmailsManager extends Module
 
             if (!file_exists($dest.DIRECTORY_SEPARATOR.$isoCode) &&
                 !mkdir($dest.DIRECTORY_SEPARATOR.$isoCode)) {
-                $this->_errors[] = $this->l('Can\'t create folder: ').$dest.DIRECTORY_SEPARATOR.$isoCode;
+                $this->_errors[] = $this->trans('Cannot create folder: %s', array($dest . DIRECTORY_SEPARATOR . $isoCode), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
             if (!copy($copySrc, $copyDest)) {
-                $this->_errors[] = $this->l('Can\'t copy file: ').$copyDest;
+                $this->_errors[] = $this->trans('Cannot copy file: %s', array($copyDest), 'Modules.Emailsmanager.Admin');
                 return false;
             }
         }
@@ -271,7 +271,7 @@ class Ps_EmailsManager extends Module
     {
         $tplName = basename(Tools::getValue('select_template'));
         if (!$tplName || $tplName == '') {
-            $this->_errors[] = $this->l('Invalid template\'s name');
+            $this->_errors[] = $this->trans('Invalid template\'s name', array(), 'Modules.Emailsmanager.Admin');
             return false;
         }
 
@@ -283,7 +283,7 @@ class Ps_EmailsManager extends Module
 
         $settings = $this->getTemplateSettings($tplName);
         if (!isset($settings['inputs']) || !is_array($settings['inputs'])) {
-            $this->_errors[] = $this->l('Invalid template');
+            $this->_errors[] = $this->trans('Invalid template', array(), 'Modules.Emailsmanager.Admin');
             return false;
         }
 
@@ -334,7 +334,7 @@ class Ps_EmailsManager extends Module
             }
 
             if (!$translations) {
-                $this->_errors[] = $this->l('Addons API error');
+                $this->_errors[] = $this->trans('Addons API error', array(), 'Admin.Notifications.Error');
                 return false;
             }
 
@@ -348,7 +348,7 @@ class Ps_EmailsManager extends Module
 
             // Create folder for compiled files
             if (!mkdir($compilePath, 0777, true)) {
-                $this->_errors[] = $this->l('Can\'t create folder: '.$compilePath);
+                $this->_errors[] = $this->trans('Cannot create folder: %s', array($compilePath), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
@@ -366,7 +366,7 @@ class Ps_EmailsManager extends Module
                     $dest = $compilePath.$f->getBasename('.tpl').'.html';
 
                     if (file_put_contents($dest, $templateContent) === false) {
-                        $this->_errors[] = $this->l('Can\'t write file:').' '.$dest;
+                        $this->_errors[] = $this->trans('Cannot write file: %s', array($dest), 'Modules.Emailsmanager.Admin');
                     }
                 } else {
                     continue;
@@ -379,7 +379,7 @@ class Ps_EmailsManager extends Module
                     $dest = $compilePath.$f->getFilename();
 
                     if (copy($f->getRealPath(), $dest) === false) {
-                        $this->_errors[] = $this->l('Can\'t write file:').' '.$dest;
+                        $this->_errors[] = $this->trans('Cannot write file: %s', array($dest), 'Modules.Emailsmanager.Admin');
                     }
                 } else {
                     continue;
@@ -395,7 +395,7 @@ class Ps_EmailsManager extends Module
             $themeMailsPath = _PS_ALL_THEMES_DIR_.$this->getCurrentThemeDirectory().DIRECTORY_SEPARATOR;
             $themeMailsPath .= 'mails'.DIRECTORY_SEPARATOR.$language['iso_code'].DIRECTORY_SEPARATOR;
             if (!file_exists($themeMailsPath) && !mkdir($themeMailsPath)) {
-                $this->_errors[] = $this->l('Can\'t create directory:').' '.$themeMailsPath;
+                $this->_errors[] = $this->trans('Cannot create directory: %s', array($themeMailsPath), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
@@ -420,7 +420,7 @@ class Ps_EmailsManager extends Module
         $dest         = _PS_IMG_DIR_.'emails';
 
         if (!file_exists($dest) && !mkdir($dest)) {
-            $this->_errors[] = $this->l('Can\'t create directory:').' '._PS_IMG_DIR_.'emails';
+            $this->_errors[] = $this->trans('Cannot create directory: %s', array(_PS_IMG_DIR_ . 'emails'), 'Admin.Emailsmanager.Admin');
             return false;
         }
 
@@ -434,7 +434,7 @@ class Ps_EmailsManager extends Module
             );
 
             if ($state === false) {
-                $this->_errors[] = $this->l('Can\'t copy file:').' '.$file->getRealPath();
+                $this->_errors[] = $this->trans('Cannot copy file: %s', array($file->getRealPath()), 'Modules.Emailsmanager.Admin');
                 return false;
             }
         }
@@ -506,7 +506,7 @@ class Ps_EmailsManager extends Module
         if (Tools::isSubmit('submitconf_'.$this->name)) {
             if ($this->saveTemplateImgs()) {
                 if ($this->saveTemplateConf()) {
-                    $this->_confirmations[] = $this->l('Template changed with success!');
+                    $this->_confirmations[] = $this->trans('Template changed successfully!', array(), 'Modules.Emailsmanager.Admin');
                 }
             }
         } elseif (Tools::getValue('select_template') === self::DEFAULT_THEME_NAME) {
@@ -522,13 +522,13 @@ class Ps_EmailsManager extends Module
             // Delete the template and restore classic
             $currentTemplate = $this->getCurrentTemplate();
             if (!$currentTemplate) {
-                $this->_errors[] = $this->l('Invalid template');
+                $this->_errors[] = $this->trans('Invalid template', array(), 'Modules.Emailsmanager.Admin');
             } else {
                 if ($currentTemplate['name'] == Tools::getValue('delete_template')) {
                     $this->restoreClassicTemplate();
                 }
                 Tools::deleteDirectory($this->importsPath.Tools::getValue('delete_template'));
-                $this->_confirmations[] = $this->l('Deleted with success');
+                $this->_confirmations[] = $this->trans('Deleted with success', array(), 'Modules.Emailsmanager.Admin');
             }
         }
 
@@ -656,7 +656,7 @@ class Ps_EmailsManager extends Module
             }
 
             if (!mkdir($backupFolder, 0777)) {
-                $this->_errors[] = $this->l('Cannot create backup\'s folder. Please check permissions.');
+                $this->_errors[] = $this->trans('Cannot create backup\'s folder. Please check permissions.', array(), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
@@ -694,7 +694,7 @@ class Ps_EmailsManager extends Module
         $settings = Tools::jsonDecode(Tools::file_get_contents($path.DIRECTORY_SEPARATOR.'settings.json'), true);
 
         if (is_null($settings)) {
-            $this->_errors[] = $this->l('Invalid settings.json');
+            $this->_errors[] = $this->trans('Invalid settings.json', array(), 'Modules.Emailsmanager.Admin');
             return false;
         }
 
@@ -715,17 +715,17 @@ class Ps_EmailsManager extends Module
         // init fields form
         $fieldsForm[0]['form'] = array(
             'legend' => array(
-                'title' => $this->l('Configure ').$settings['name'],
+                'title' => $this->trans('Configure', array(), 'Admin.Actions').$settings['name'],
                 'name'  => $settings['name'],
             ),
             'input' => array(),
             'submit' => array(
-                'title' => $this->l('Save'),
+                'title' => $this->trans('Save', array(), 'Admin.Actions'),
                 'class' => 'btn btn-default pull-right',
             ),
             'buttons' => array(
                 'preview' => array(
-                    'title' => $this->l('Preview'),
+                    'title' => $this->trans('Preview', array(), 'Admin.Actions'),
                     'icon' => 'process-icon-preview',
                     'class' => 'pull-right',
                     'id' => 'preview-template',
@@ -733,7 +733,7 @@ class Ps_EmailsManager extends Module
                 ),
                 'cancel' => array(
                     'href' => $this->context->link->getAdminLink('AdminModules').'&configure='.$this->name,
-                    'title' => $this->l('Cancel'),
+                    'title' => $this->trans('Cancel', array(), 'Admin.Actions'),
                     'icon' => 'process-icon-cancel'
                 )
             )
@@ -762,7 +762,7 @@ class Ps_EmailsManager extends Module
         $fieldsForm[0]['form']['buttons'] = array(
             array(
                 'href' => $this->context->link->getAdminLink('AdminModules').'&configure='.$this->name,
-                'title' => $this->l('Cancel'),
+                'title' => $this->trans('Cancel', array(), 'Admin.Actions'),
                 'icon' => 'process-icon-cancel'
             ),
         );
@@ -879,19 +879,19 @@ class Ps_EmailsManager extends Module
 
         $fieldsForm[0]['form'] = array(
             'legend' => array(
-                'title' => $this->l('Import a pack of template'),
+                'title' => $this->trans('Import a pack of template', array(), 'Modules.Emailsmanager.Admin'),
             ),
             'input' => array(
                 array(
                     'type'     => 'file',
-                    'label'    => $this->l('Zip'),
-                    'desc'     => $this->l('Select your template\'s zip'),
+                    'label'    => $this->trans('ZIP file', array(), 'Admin.Global'),
+                    'desc'     => $this->trans('Select the template you want to import', array(), 'Modules.Emailsmanager.Admin'),
                     'required' => true,
                     'name'     => 'uploadedfile',
                 ),
             ),
             'submit' => array(
-                'title' => $this->l('Save'),
+                'title' => $this->trans('Save', array(), 'Admin.Actions'),
                 'class' => 'btn btn-default pull-right'
             ),
         );
@@ -939,7 +939,7 @@ class Ps_EmailsManager extends Module
             $this->manageUploadError();
         } elseif (!isset($_FILES['uploadedfile'])
             || !self::hasValidMimeType($_FILES['uploadedfile']['tmp_name'], 'application/zip')) {
-            $this->_errors[] = $this->l('Invalid .zip file');
+            $this->_errors[] = $this->trans('Invalid .zip file', array(), 'Modules.Emailsmanager.Admin');
         } else {
             $targetPath .= uniqid().DIRECTORY_SEPARATOR;
 
@@ -948,12 +948,12 @@ class Ps_EmailsManager extends Module
             }
 
             if (!mkdir($targetPath, 0777, true)) {
-                $this->_errors[] = $this->l('Can\'t create folder: '.$targetPath);
+                $this->_errors[] = $this->trans('Cannot create folder: %s', array($targetPath), 'Modules.Emailsmanager.Admin');
                 return false;
             }
 
             if (!move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $targetPath.$_FILES['uploadedfile']['name'])) {
-                $this->_errors[] = $this->l('Can\'t copy file to:').' '.$targetPath;
+                $this->_errors[] = $this->trans('Cannot copy file to: %s', array($targetPath), 'Admin.Emailsmanager.Admin');
             } else {
                 return $this->unpackTemplates($targetPath, $_FILES['uploadedfile']['name']);
             }
@@ -980,7 +980,7 @@ class Ps_EmailsManager extends Module
                 $fullPath = $destPath.DIRECTORY_SEPARATOR.$file;
                 if (!is_dir($fullPath)) {
                     if (!self::hasValidMimeType($fullPath, $allowedTypes)) {
-                        $this->_errors[] = $this->l('Invalid file(s) in your zip');
+                        $this->_errors[] = $this->trans('Invalid file(s) in your .zip', array(), 'Modules.Emailsmanager.Admin');
                         Tools::deleteDirectory($destPath);
                         $zip->close();
                         return false;
@@ -992,9 +992,9 @@ class Ps_EmailsManager extends Module
             $settings = Tools::file_get_contents($settingsPath);
             $settings = Tools::jsonDecode($settings, true);
             if (!$settings || is_null($settings)) {
-                $this->_errors[] = $this->l('Settings file is missing');
+                $this->_errors[] = $this->trans('Settings file is missing', array(), 'Modules.Emailsmanager.Admin');
             } elseif (!isset($settings['name']) || empty($settings['name'])) {
-                $this->_errors[] = $this->l('Name is missing in settings file');
+                $this->_errors[] = $this->trans('Name is missing in settings file', array(), 'Modules.Emailsmanager.Admin');
             } else {
                 if (file_exists($this->importsPath.$settings['name'])) {
                     Tools::deleteDirectory($this->importsPath.$settings['name']);
@@ -1006,7 +1006,7 @@ class Ps_EmailsManager extends Module
             }
             $zip->close();
         } else {
-            $this->_errors[] = $this->l('Can\'t open:'.$zipPath);
+            $this->_errors[] = $this->trans('Cannot open: %s', array($zipPath), 'Modules.Emailsmanager.Admin');
         }
 
         Tools::deleteDirectory($zipPath);
@@ -1020,30 +1020,30 @@ class Ps_EmailsManager extends Module
     {
         switch ($_FILES['uploadedfile']['error']) {
             case UPLOAD_ERR_INI_SIZE:
-                $this->_errors[] = $this->l('The uploaded file exceeds the upload_max_filesize directive in php.ini');
+                $this->_errors[] = $this->trans('The uploaded file exceeds the upload_max_filesize directive in php.ini', array(), 'Admin.Notifications.Error');
                 break;
             case UPLOAD_ERR_FORM_SIZE:
-                $this->_errors[] = $this->l(
-                    'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form'
+                $this->_errors[] = $this->trans(
+                    'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form', array(), 'Admin.Notifications.Error'
                 );
                 break;
             case UPLOAD_ERR_PARTIAL:
-                $this->_errors[] = $this->l('The uploaded file was only partially uploaded');
+                $this->_errors[] = $this->trans('The uploaded file was only partially uploaded', array(), 'Admin.Notifications.Error');
                 break;
             case UPLOAD_ERR_NO_FILE:
-                $this->_errors[] = $this->l('No file was uploaded');
+                $this->_errors[] = $this->trans('No file was uploaded', array(), 'Admin.Notifications.Error');
                 break;
             case UPLOAD_ERR_NO_TMP_DIR:
-                $this->_errors[] = $this->l('Missing a temporary folder');
+                $this->_errors[] = $this->trans('Missing a temporary folder', array(), 'Admin.Notifications.Error');
                 break;
             case UPLOAD_ERR_CANT_WRITE:
-                $this->_errors[] = $this->l('Failed to write file to disk.');
+                $this->_errors[] = $this->trans('Failed to write file to disk.', array(), 'Admin.Notifications.Error');
                 break;
             case UPLOAD_ERR_EXTENSION:
-                $this->_errors[] = $this->l('A PHP extension stopped the file upload.');
+                $this->_errors[] = $this->trans('A PHP extension stopped the file upload.', array(), 'Admin.Notifications.Error');
                 break;
             default:
-                $this->_errors[] = sprintf($this->l('Internal error #%s'), $_FILES['newfile']['error']);
+                $this->_errors[] = $this->trans('Internal error #%s', array($_FILES['newfile']['error']), 'Admin.Notifications.Error');
                 break;
         }
     }
