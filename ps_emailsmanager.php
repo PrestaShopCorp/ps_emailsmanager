@@ -33,7 +33,7 @@ class Ps_EmailsManager extends Module
         parent::__construct();
 
         $this->displayName = $this->trans('Email Templates Manager', array(), 'Modules.Emailsmanager.Admin');
-        $this->description = $this->trans('Adapt your emails’ design to your site’s visual identity, to your business, or to the time of the year!', array(), 'Modules.Emailsmanager.Admin');
+        $this->description = $this->trans('Adapt your emails’ design to your visual identity or type of business.', array(), 'Modules.Emailsmanager.Admin');
         $this->confirmUninstall = $this->trans(
             'Are you sure you want to uninstall this module? It will restore default email templates', array(), 'Modules.Emailsmanager.Admin'
         );
