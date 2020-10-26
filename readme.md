@@ -2,7 +2,7 @@
 
 ## About
 
-Install customized emails templates on your shop.
+Adapt your emails’ design to your visual identity or type of business.
 
 ## Contributing
 
