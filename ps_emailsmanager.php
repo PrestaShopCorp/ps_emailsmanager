@@ -841,8 +841,8 @@ class Ps_EmailsManager extends Module
             return $templates;
         }
 
-        //remove '.' and '..' from array
-        $templatesDir = array_diff($templatesDir, array('.', '..'));
+        //remove '.', '..' and 'index.php' from array
+        $templatesDir = array_diff($templatesDir, array('.', '..', 'index.php'));
 
         foreach ($templatesDir as $tpl) {
             $settings = $uploadDir.$tpl.DIRECTORY_SEPARATOR.'settings.json';
