@@ -41,7 +41,10 @@ class ImageFilterIterator extends RecursiveFilterIterator
             return in_array($type, self::$validTypeConstants, true);
         } else {
             $imagesize = getimagesize($filePath);
-
+            if (empty($imagesize)) {
+                return false;
+            }
+            
             // Index 2 is one of the IMAGETYPE_XXX constants indicating the
             // type of the image
             return in_array($imagesize[2], self::$validTypeConstants, true);
