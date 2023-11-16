@@ -217,7 +217,7 @@ class Ps_EmailsManager extends Module
         $translations = Tools::file_get_contents(
             'http://api.addons.prestashop.com/index.php?version=1&method=translations&type=emails&iso_lang='.$iso_lang
         );
-        $translations = Tools::jsonDecode($translations, true);
+        $translations = json_decode($translations, true);
 
         if (is_null($translations) || !$translations) {
             return false;
@@ -310,7 +310,7 @@ class Ps_EmailsManager extends Module
         $this->context->smarty->assign($this->getTplVariables());
 
         // ... and add a record in the database
-        Configuration::updateGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId(), Tools::jsonEncode($userSettings));
+        Configuration::updateGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId(), json_encode($userSettings));
 
         // Change smarty delimiters to ease the parsing process
         $this->context->smarty->left_delimiter = '{{';
@@ -670,9 +670,9 @@ class Ps_EmailsManager extends Module
     {
         $currentTpl = Configuration::getGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId());
         if ($currentTpl) {
-            $currentTpl = Tools::jsonDecode($currentTpl, true);
+            $currentTpl = json_decode($currentTpl, true);
             $path = $this->importsPath.$currentTpl['name'];
-            $settings = Tools::jsonDecode(Tools::file_get_contents($path.DIRECTORY_SEPARATOR.'settings.json'), true);
+            $settings = json_decode(Tools::file_get_contents($path.DIRECTORY_SEPARATOR.'settings.json'), true);
             return is_null($settings) ? false : $settings;
         } else {
             return array(
@@ -686,7 +686,7 @@ class Ps_EmailsManager extends Module
     public function getTemplateSettings($name)
     {
         $path     = $this->importsPath.$name;
-        $settings = Tools::jsonDecode(Tools::file_get_contents($path.DIRECTORY_SEPARATOR.'settings.json'), true);
+        $settings = json_decode(Tools::file_get_contents($path.DIRECTORY_SEPARATOR.'settings.json'), true);
 
         if (is_null($settings)) {
             $this->_errors[] = $this->l('Invalid settings.json');
@@ -788,7 +788,7 @@ class Ps_EmailsManager extends Module
     public function getFieldsValue(array $settings)
     {
         $fieldsValue  = array();
-        $userSettings = Tools::jsonDecode(Configuration::getGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId()), true);
+        $userSettings = json_decode(Configuration::getGlobalValue('MAILMANAGER_CURRENT_CONF_'.$this->getCurrentThemeId()), true);
 
         // If the template currently installed is not the same that the one that
         // is being configured, load the default values
@@ -844,7 +844,7 @@ class Ps_EmailsManager extends Module
             if (file_exists($settings)) {
                 $settings = Tools::file_get_contents($settings);
                 if ($settings) {
-                    $template = Tools::jsonDecode($settings, true);
+                    $template = json_decode($settings, true);
                     $template['folder'] = $tpl;
                     $templates[] = $template;
                 }
@@ -985,7 +985,7 @@ class Ps_EmailsManager extends Module
 
             $settingsPath = $destPath.DIRECTORY_SEPARATOR.'settings.json';
             $settings = Tools::file_get_contents($settingsPath);
-            $settings = Tools::jsonDecode($settings, true);
+            $settings = json_decode($settings, true);
             if (!$settings || is_null($settings)) {
                 $this->_errors[] = $this->l('Settings file is missing');
             } elseif (!isset($settings['name']) || empty($settings['name'])) {
